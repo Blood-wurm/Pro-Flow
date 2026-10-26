@@ -11,6 +11,9 @@ Expected outputs are {"value": "1.45", "unit"} or {"values": ["0.013", ...],
 computed series (default 0). Each series element is checked on its own and
 named "name[i]".
 
+An expected entry with "gate": false is compared and shown but never fails
+the case, e.g. fitted coefficients compared with a vendor's own fit.
+
 "known_source_errors" maps a check name to a note for a published value that
 the source's own inputs contradict. Such a check is reported as
 "source_error" and does not gate the case; the value is never edited.
@@ -31,7 +34,7 @@ from pathlib import Path
 import numpy as np
 
 from proflow.engine import unit_hydrograph as uh
-from proflow.engine.idf import FhaCurve
+from proflow.engine.idf import FhaCurve, fit_fha_report
 from proflow.engine.rainfall import MassCurve
 from proflow.engine.rational import peak_flow, standard_rational
 from proflow.engine.result import SolveResult, Status
@@ -128,6 +131,21 @@ def _nrcs_uh_curvilinear(x: dict) -> SolveResult[Outputs]:
     return SolveResult(Status.SUCCESS, "scs.uh.curvilinear/1", values)
 
 
+def _idf_fha_evaluate(x: dict) -> SolveResult[Outputs]:
+    curve = FhaCurve(x["b"], x["d"], x["e"])
+    values = {"intensities": np.atleast_1d(curve.intensity(x["durations"]))}
+    return SolveResult(Status.SUCCESS, "idf.fha/1", values)
+
+
+def _idf_fha_fit(x: dict) -> SolveResult[Outputs]:
+    r = fit_fha_report(x["durations"], x["intensities"])
+    if not r.ok:
+        return SolveResult(r.status, r.method, message=r.message)
+    c = r.value.curve
+    values = {"fitted": r.value.fitted, "b": c.b, "d": c.d, "e": c.e}
+    return SolveResult(Status.SUCCESS, r.method, values, warnings=r.warnings)
+
+
 def _uh_convolve(x: dict) -> SolveResult[Outputs]:
     flows = np.append(uh.convolve(x["excess"], x["unit_hydrograph"]), 0.0)
     return SolveResult(Status.SUCCESS, "uh.convolve/1", {"flows": flows})
@@ -206,6 +224,26 @@ METHODS: dict[str, Method] = {
         outputs={"qp": "flow", "ordinates": "flow"},
         run=_nrcs_uh_curvilinear,
     ),
+    "idf.fha.evaluate": Method(
+        inputs={
+            "b": "dimensionless",
+            "d": "dimensionless",
+            "e": "dimensionless",
+            "durations": "time",
+        },
+        outputs={"intensities": "intensity"},
+        run=_idf_fha_evaluate,
+    ),
+    "idf.fha.fit": Method(
+        inputs={"durations": "time", "intensities": "intensity"},
+        outputs={
+            "fitted": "intensity",
+            "b": "dimensionless",
+            "d": "dimensionless",
+            "e": "dimensionless",
+        },
+        run=_idf_fha_fit,
+    ),
     "uh.convolve": Method(
         inputs={"excess": "depth", "unit_hydrograph": "flow"},
         outputs={"flows": "flow"},
@@ -224,6 +262,7 @@ class Expected:
     text: str  # as displayed by the source, e.g. "1.45"
     unit: str
     tolerance: float  # in `unit`
+    gated: bool = True
 
     @property
     def name(self) -> str:
@@ -258,7 +297,7 @@ def displayed_tolerance(text: str) -> float:
 
 
 def _expected(name: str, entry: dict, where: str) -> list[Expected]:
-    unit, tol = entry["unit"], entry.get("tolerance")
+    unit, tol, gated = entry["unit"], entry.get("tolerance"), entry.get("gate", True)
     if "values" in entry:
         texts, start = entry["values"], entry.get("start", 0)
         indices = range(start, start + len(texts))
@@ -270,7 +309,12 @@ def _expected(name: str, entry: dict, where: str) -> list[Expected]:
             raise FixtureError(f"{where}: expected.{name} must be strings as shown")
         out.append(
             Expected(
-                name, i, text, unit, displayed_tolerance(text) if tol is None else tol
+                name,
+                i,
+                text,
+                unit,
+                displayed_tolerance(text) if tol is None else tol,
+                gated,
             )
         )
     return out
@@ -402,7 +446,7 @@ def run_fixture(fixture: Fixture) -> CaseResult:
         close = abs(computed - exp.value) <= exp.tolerance * (1 + 1e-9)
         if exp.name in fixture.known_source_errors:
             status = "source_error"
-        elif not gated:
+        elif not gated or not exp.gated:
             status = "info"
         else:
             status = "pass" if close else "fail"
@@ -410,7 +454,7 @@ def run_fixture(fixture: Fixture) -> CaseResult:
 
     if not gated:
         case_status = "informational"
-    elif all(c.status in ("pass", "source_error") for c in checks):
+    elif all(c.status in ("pass", "source_error", "info") for c in checks):
         case_status = "pass"
     else:
         case_status = "fail"

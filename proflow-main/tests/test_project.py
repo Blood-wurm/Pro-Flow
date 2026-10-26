@@ -187,3 +187,25 @@ def test_limb_factors_only_for_standard_rational():
     problems = _problems(data)
     assert "only for rational" in problems["catchments[0].ascending_limb_factor"]
     assert "only for rational" in problems["catchments[0].receding_limb_factor"]
+
+
+def test_polynomial_idf_outside_manual_range_warns():
+    data = _data()
+    data["rainfall"]["idf_sets"].append(
+        {
+            "id": "poly",
+            "name": "FLZone1H.IDF 5-yr coefficients (Express manual p. 57)",
+            "form": "polynomial",
+            "curves": [
+                {"return_period": 5, "a": 11.82413, "b": -2.28931, "c": -0.07735,
+                 "d": 0.02535}
+            ],
+        }
+    )  # fmt: skip
+    data["catchments"][0]["idf"] = "poly"
+    data["catchments"][0]["tc"] = {"value": 5, "unit": "min"}
+    (r,) = calculate(Project.from_dict(data))
+    assert any("outside the 8-180 min range" in w for w in r.result.warnings)
+    data["catchments"][0]["tc"] = {"value": 14, "unit": "min"}
+    (r,) = calculate(Project.from_dict(data))
+    assert not any("8-180" in w for w in r.result.warnings)

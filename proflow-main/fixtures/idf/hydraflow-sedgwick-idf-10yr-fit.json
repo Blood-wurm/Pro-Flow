@@ -1,0 +1,92 @@
+{
+  "schema": "proflow-fixture/1",
+  "product": "Hydraflow Hydrographs",
+  "product_version": "v9.22 (Intelisolve, 2008)",
+  "completeness": "complete",
+  "source": {
+    "title": "Hydraflow Rainfall Report, file SedgwickCoKS.IDF, project 07698_Detention.gpw, dated Thursday, Sep 4, 2008",
+    "url": "https://online.wichita.gov/LFWebDocs/Home/GetStormwaterDoc/220496",
+    "local_pdf": "reference/public_cases/Storm-one-line-source.pdf",
+    "pdf_page": 35,
+    "sha256": "c43dacab5e050aa693c3409d9d9a5988ce440f9bfb2c9a6bb11fa91801a53d9e"
+  },
+  "missing": [],
+  "id": "hydraflow-sedgwick-idf-10yr-fit",
+  "method": "idf.fha.fit",
+  "inputs": {
+    "durations": {
+      "values": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40,
+        45,
+        50,
+        55,
+        60
+      ],
+      "unit": "min"
+    },
+    "intensities": {
+      "values": [
+        7.4,
+        6.09,
+        5.22,
+        4.6,
+        4.13,
+        3.76,
+        3.46,
+        3.21,
+        3.0,
+        2.82,
+        2.67,
+        2.53
+      ],
+      "unit": "in/hr"
+    }
+  },
+  "expected": {
+    "fitted": {
+      "values": [
+        "7.40",
+        "6.09",
+        "5.22",
+        "4.60",
+        "4.13",
+        "3.76",
+        "3.46",
+        "3.21",
+        "3.00",
+        "2.82",
+        "2.67",
+        "2.53"
+      ],
+      "unit": "in/hr",
+      "tolerance": 0.0061
+    },
+    "b": {
+      "value": "55.1841",
+      "unit": "-",
+      "gate": false
+    },
+    "d": {
+      "value": "11.1000",
+      "unit": "-",
+      "gate": false
+    },
+    "e": {
+      "value": "0.7229",
+      "unit": "-",
+      "gate": false
+    }
+  },
+  "assumptions": [
+    "The table Hydraflow fitted this file from is not in the report; the printed 12-point table (itself computed from the coefficients and rounded) stands in for it. So the gate is that Pro-Flow's fit reproduces the printed table; B, D, E are shown against Hydraflow's for information only.",
+    "Intensity tolerance = 0.005 (printed to 0.01) + the largest change that rounding B, D and E to the printed 4 decimals can cause at these durations; Hydraflow evaluates unrounded coefficients (values computed from the printed ones fall on both sides of the printed table, so it is not truncation)."
+  ],
+  "notes": "Hydraflow's printed D values are multiples of 0.1 (observation, not a documented rule)."
+}

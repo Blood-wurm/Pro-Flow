@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from proflow import fixtures
+from proflow import cli_idf, fixtures
 from proflow.calculate import calculate, results_document
 from proflow.io.project_json import read_project, write_json
 from proflow.model.project import SCHEMA_VERSION, ProjectError
@@ -93,6 +93,8 @@ def main(argv: list[str] | None = None) -> int:
     fix = sub.add_parser("fixtures", help="check reference-case fixtures")
     fix.add_argument("paths", nargs="*", type=Path, help="files or directories")
     fix.set_defaults(func=_fixtures)
+
+    cli_idf.add_parser(sub)
 
     args = parser.parse_args(argv)
     return args.func(args)

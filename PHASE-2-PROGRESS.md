@@ -1,6 +1,6 @@
 # Phase 2 progress: rainfall and runoff foundation
 
-Status 2026-10-25: two slices done. Slice 1: limb and endpoint rules, mass-curve storms, incremental excess, NRCS unit hydrographs, convolution. Slice 2: SCS catchments in the project model and CLI, user-supplied storm library, hydrograph resampling and combination with volume checks. 171 tests pass, Ruff clean, `proflow fixtures` 7/7 complete cases pass. All methods remain **experimental**.
+Status 2026-10-25: three slices done. Slice 1: limb and endpoint rules, mass-curve storms, incremental excess, NRCS unit hydrographs, convolution. Slice 2: SCS catchments in the project model and CLI, user-supplied storm library, hydrograph resampling and combination with volume checks. Slice 3: CI, IDF table import/export, FHA fit diagnostics. 212 tests pass, Ruff clean, `proflow fixtures` 20/20 complete cases pass. All methods remain **experimental**.
 
 ## Rules settled
 
@@ -42,6 +42,33 @@ Source discrepancy recorded, not edited: table 21B-7 column (c) prints 22 cfs at
 - `examples/scs-user-storm.proflow.json`: one basin through both unit-hydrograph forms, 2- and 100-yr. Illustrative only; the storm is app. 21B's 5-point curve with example depths.
 - Schema is now `proflow-project` **v2**: a v1 reader rejects `rainfall.storms`, SCS catchments and `ascending_limb_factor`, so files that can hold them get a new version. v1 files load through an explicit migration (`proflow/io/migrations.py`) that writes the v2 defaults (`storms: []`, Rational limb factors 1, SCS `tp_equation` 16A-10 and `ia_ratio` 0.2) and keeps any of those fields a pre-release v1 file already has. Saving always writes v2; `proflow run` notes when it read an older file. Policy: bump only when an older reader cannot safely interpret a newly written file.
 
+## IDF tables and fit diagnostics (slice 3)
+
+- **Import**: NOAA Atlas 14 point-frequency CSV (depth or intensity, English or metric; no published spec, so the reader accepts only the layout NOAA's files show and rejects anything else) and Pro-Flow's own `proflow-idf-table/1` CSV (documented in `io/idf_table.py`, explicit duration and intensity units). Hydraflow `.IDF` files are **not** read: no published format.
+- **Export**: `proflow idf convert` (any table to `proflow-idf-table/1`, lossless round trip) and `proflow idf export` (a project IDF set evaluated at chosen durations; default 5-60 min by 5, as in Hydraflow's rainfall report).
+- **Fit**: `proflow idf fit` fits FHA per return period over a 5-60 min window by default (Hydraflow's table window), optionally with D restricted to multiples of `--d-step`, and writes an `idf_set` a project accepts plus a fit report. Diagnostics: B, D, E, point count, duration range, max absolute and relative residual, RMS log residual. Warnings: any point > 1 % off (concave data, Express manual p. 54), intensity not falling with duration, three points (exact fit), D at the search limit.
+- **Interpolation policy**: between durations the equation is used, never table interpolation. Fitted curves are supported over their fit window; polynomial IDF outside 8-180 min (Hydrographs manual p. 80) gets a warning in project results.
+- **Hydraflow evidence**: the Hydraflow Rainfall Report on p. 35 of the Storm Sewers source PDF (`SedgwickCoKS.IDF`, Hydrographs v9.22) gives B, D, E and a 12-duration table. Fixtures in `fixtures/idf/`: printed coefficients reproduce the printed table (6 cases) and Pro-Flow's fit to the printed table reproduces it (6 cases; B, D, E shown against Hydraflow's for information). Tolerance = 0.005 display + the effect of rounding B, D, E to 4 decimals; Hydraflow evaluates unrounded coefficients (differences fall on both sides of the table, so it is not truncation). Hydraflow's D values are multiples of 0.1 (observation only).
+- **Storm Sewers flow explained**: the same report's full-precision 100-yr coefficients (62.2794, 10.1, 0.6624) give 7.365 in/hr and 7.07 cfs, matching the one-line tabulation; the 7.13 cfs gap came from the printed equation's rounded E (0.66). New complete fixture `storm-one-line-rational-flow-sedgwick-idf`, assumption stated; the original partial pipe case is unchanged.
+- **NOAA source note**: NOAA's intensity file is not exactly its depth file divided by duration at 12 of 190 cells (3, 6, 12 h; up to 0.55 %). Pro-Flow converts by definition; the test pins those cells.
+- **CI**: `.github/workflows/ci.yml` runs Ruff lint, Ruff format check, pytest and `proflow fixtures` on Ubuntu and Windows with Python 3.11 and 3.12, tools pinned (ruff 0.17.2, pytest 9.1.1). Python 3.11 has not been run locally.
+
+## Storm methods: status
+
+| Method | Hydraflow source | Status in Pro-Flow |
+|---|---|---|
+| User mass curve (any table) | — | **Supported** (`rainfall.storms`) |
+| Custom design storm, `.cds` file | Hydrographs manual p. 66 documents the format (interval in minutes, then cumulative ratios; zero at t = 0 assumed; ≤ 2,880 values) | Unsupported; format is documented, so an importer can be built |
+| NRCS Type I, IA, II, III (24 h) | Manual names them; Hydraflow builds them from piecewise cubic polynomials whose coefficients it does not print (p. 77) | **Unsupported**: no official tabulation or coefficients in hand |
+| Type II FL (24 h) | Named only (p. 65) | **Unsupported**: no source |
+| SCS 6-hr | Named only (p. 65) | **Unsupported**: no source |
+| Synthetic (IDF-based) | Method described: IDF depth increments over the interval, largest near the centre, others alternating symmetrically; duration ≥ 2 Tc and ≤ 6 h (pp. 66, 77) | Unsupported; buildable from the description and Pro-Flow's IDF sets, exact block order needs a check case |
+| Huff 1st quartile | Manual p. 67-68 prints the cumulative table (% precipitation at each 5 % of storm time), citing ISWS Bulletin 70/71 and Circular 173, Table 3 | Unsupported; buildable from the printed table, should be checked against the ISWS original |
+| Huff 2nd, 3rd, 4th quartile | Cited (ISWS Bulletin 70/71, Circular 173) but not printed | **Unsupported**: need the ISWS tables |
+| Huff Indy | Named only ("used primarily in Indianapolis") | **Unsupported**: no source identified |
+
+The Hydraflow Rainfall Report above also prints that project's precipitation table (SCS 24-hour, SCS 6-hr, Huff-1st, Huff-Indy and Custom depths per return period), a possible source of check depths once those distributions exist.
+
 ## Open items
 
 - **NRCS Type I/IA/II/III 24-h tables**: still no official tabulation in hand; NEH 630 ch. 4 describes but does not tabulate them. `MassCurve` accepts any table once one is sourced.
@@ -50,4 +77,5 @@ Source discrepancy recorded, not edited: table 21B-7 column (c) prints 22 cfs at
 - **Off-grid Rational peak**: Pro-Flow reports the sampled peak plus a warning. Whether Hydraflow prints CiA or the sampled ordinate for off-grid Tc is unknown; needs a published case with Tc not a whole minute.
 - **Project-level combination**: `combine` exists in the engine only; combine/divert nodes in the project model belong with Phase 4 watershed objects.
 - **Hydrograph start offsets**: all hydrographs start at t = 0 (as the manual's combine does). Lagged inputs from routing will need an offset rule.
-- **Not yet built in Phase 2**: IDF table import/export and fit diagnostics, synthetic (IDF-based) and Huff storms, hydrograph splitting/diversion, SBUH and DeKalb Rational.
+- **Not yet built in Phase 2**: storm generation (see table above), hydrograph splitting/diversion, SBUH and DeKalb Rational, Hydro-35 / western-states map-data IDF creation (equations on Hydrographs manual pp. 78-79).
+- **IDF provenance in projects**: a project's IDF set does not yet record the table or fit it came from (would be a schema change); `proflow idf fit --json` keeps the report beside it.

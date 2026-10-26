@@ -29,7 +29,7 @@ _FACTORS: dict[str, dict[str, float]] = {
     "velocity": {"ft/s": 1.0, "m/s": FT_PER_M},
     "volume": {"ft3": 1.0, "m3": FT_PER_M**3, "ac-ft": 43560.0},
     "time": {"min": 1.0, "s": 1 / 60, "hr": 60.0},
-    "intensity": {"in/hr": 1.0, "mm/hr": 1 / 25.4},
+    "intensity": {"in/hr": 1.0, "mm/hr": 1 / 25.4, "cm/hr": 1 / 2.54},
     "depth": {"in": 1.0, "mm": 1 / 25.4},
     "slope": {"ft/ft": 1.0, "%": 0.01},
     "dimensionless": {"-": 1.0},

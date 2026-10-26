@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from proflow import __version__
 from proflow.engine.hydrograph import Hydrograph
+from proflow.engine.idf import POLYNOMIAL_RANGE, PolynomialCurve
 from proflow.engine.rational import (
     MODIFIED,
     STANDARD,
@@ -68,6 +69,13 @@ def _rational(
         )
     else:
         result = modified_rational(c.c, area, tc, curve, c.storm_duration_factor, dt)
+    low, high = POLYNOMIAL_RANGE
+    if isinstance(curve, PolynomialCurve) and not low <= duration <= high:
+        note = (
+            f"polynomial IDF evaluated at {duration:g} min, outside the "
+            f"{low:g}-{high:g} min range the Hydrographs manual gives (p. 80)"
+        )
+        result = replace(result, warnings=(*result.warnings, note))
     return CatchmentResult(c.id, event, result, {"intensity": (intensity, "in/hr")})
 
 

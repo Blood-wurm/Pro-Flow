@@ -1,0 +1,56 @@
+{
+  "schema": "proflow-fixture/1",
+  "product": "Hydraflow Storm Sewers",
+  "product_version": "2008 v12.02",
+  "completeness": "complete",
+  "source": {
+    "title": "Storm Sewer Tabulation (07698SWS.stm, PDF pp. 46-47) with the 100-yr coefficients of the Hydraflow Rainfall Report on PDF p. 35 of the same document",
+    "url": "https://online.wichita.gov/LFWebDocs/Home/GetStormwaterDoc/220496",
+    "local_pdf": "reference/public_cases/Storm-one-line-source.pdf",
+    "pdf_page": 46,
+    "sha256": "c43dacab5e050aa693c3409d9d9a5988ce440f9bfb2c9a6bb11fa91801a53d9e"
+  },
+  "missing": [],
+  "id": "storm-one-line-rational-flow-sedgwick-idf",
+  "method": "storm.rational.line_flow",
+  "inputs": {
+    "area": {
+      "value": 2.0,
+      "unit": "ac"
+    },
+    "c": {
+      "value": 0.48,
+      "unit": "-"
+    },
+    "tc": {
+      "value": 15.0,
+      "unit": "min"
+    },
+    "idf_b": {
+      "value": 62.2794,
+      "unit": "-"
+    },
+    "idf_d": {
+      "value": 10.1,
+      "unit": "-"
+    },
+    "idf_e": {
+      "value": 0.6624,
+      "unit": "-"
+    }
+  },
+  "expected": {
+    "intensity": {
+      "value": "7.4",
+      "unit": "in/hr"
+    },
+    "flow": {
+      "value": "7.07",
+      "unit": "cfs"
+    }
+  },
+  "assumptions": [
+    "The Storm Sewers run used SedgwickCoKS.IDF: its printed equation 62.28 / (Tc + 10.10)^0.66 is the report's 100-yr B, D, E rounded, and both runs are project 07698 in the same document."
+  ],
+  "notes": "Line flow only; pipe capacity and HGL remain in the partial storm-one-line-outfall-100yr case."
+}
