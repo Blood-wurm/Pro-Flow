@@ -1,6 +1,6 @@
 # Phase 3 progress: Express calculators
 
-Status 2026-10-26: channel solver and one runnable Express channel screen are done. The weir screen, on-screen rating plot, and app shell are not built yet. 303 tests pass in the developer environment, Ruff clean, `proflow fixtures` 39/39 complete cases pass. All methods remain **experimental**.
+Status 2026-10-26: slice 3.1 workflow done for the supported shapes: channel (rectangular, triangular, trapezoidal) and rectangular weir, each with solver, form, results, cross-section and rating plots, Q vs. depth table and printable report, in the PySide6 desktop app. 312 tests pass including the GUI smoke tests, Ruff clean, `proflow fixtures` 39/39 complete cases pass. CI now installs the GUI extra and requires the GUI tests (not yet run on GitHub). All methods remain **experimental**.
 
 ## Channel solver (`engine/channel.py`, `proflow channel`)
 
@@ -26,7 +26,6 @@ Fixture tolerance: half the printed digit plus the output's change when the slop
 
 - Express channel shapes: circular (pipe), gutter, user-defined station/elevation with composite n (HEC-RAS eq. 2-6, manual p. 27).
 - Weir types beyond rectangular: compound, circular, V-notch, trapezoidal (Cipoletti), proportional (Sutro); weir rating tables.
-- Form, result table view, cross-section and rating-curve plots, printable report for channel and weir (the "form, results, plot, report together" rule of the plan). No GUI toolkit is installed yet (PySide6 is listed in requirements.txt).
 
 ## Storm note carried from Phase 2
 
@@ -34,10 +33,24 @@ The IDF-based synthetic storm stays experimental / unbuilt until a complete outp
 
 ## UI prototype (2026-10-26): one Express channel screen, for the framework decision
 
-Run: `proflow-main/.venv/Scripts/python.exe -m proflow.gui.channel_screen` (PySide6 6.12, optional extra `pip install -e .[gui]`).
+Superseded by the desktop app below; the prototype `gui/channel_screen.py` became `gui/channel_panel.py`.
 
 - Qt-free layers built first, so they serve PySide6 or a web frontend alike: `model/express.py` (inputs, `calculate_channel` / `calculate_weir`, depth-reporting labels), `graph/express.py` (cross-section and rating plot data), `reports/express.py` (report HTML). Weir solver gained EGL and a Q vs. depth table.
 - PySide6 screen (`gui/`): inputs with units, results with units, warnings and notes, cross-section plot (W.S., Yc, EGL, elevations), Q vs. depth table with row selection, report preview, PDF / HTML export and print, all in one style (`gui/style.py`, light palette fixed so the Windows dark theme does not leak in). Chips show the method id, Exact vs. Express stepped depths, and Experimental.
 - Checked as real windows on this machine: Dell U2720Q at 150 % (native) and 100 % (emulated with QT_SCALE_FACTOR; the 100 % monitor seen in the first run was no longer attached). Report PDF checked by rendering page 1.
 - Qt friction met and fixed: styled spin boxes with `NoButtons` hide their text in Qt 6.12 (arrows hidden by stylesheet instead); combo-box arrows need an SVG asset once styled; Windows dark mode leaks into Fusion unless a palette is set; the `offscreen` platform on Windows has no fonts (PDFs exported there show boxes; the app and native-platform exports are fine).
 - Decision: continue in PySide6 after reviewing the runnable screen at 100 % and 150 % scaling. Next: weir panel, on-screen rating plot, app shell, and PySide6 GUI tests in CI. Remaining shapes follow that complete workflow.
+
+## Desktop app (2026-10-26)
+
+Run: `proflow-gui`, or `proflow-main/.venv/Scripts/python.exe -m proflow.gui` (install with `pip install -e .[gui]`).
+
+- Shell (`gui/app.py`): sidebar with an EXPRESS group (Channel, Weir), one page per calculator, version and "experimental" in the footer.
+- `gui/panel.py` `CalculatorPanel`: the shared layout and behaviour; `ChannelPanel` and `WeirPanel` supply only the form, result fields and calculation. Both open on their published Express case (Sec B-B @ Q100; Forebay @ DP 4.3 Notch).
+- Plot card has two tabs: section (cross-section / weir section) and **rating curve** (Q vs. depth over the total depth, reported state marked; follows the selected table row). Depth and flow axes start at zero.
+- Weir panel: crest, bottom length, total depth, Cw with an "Express default" box (3.33 sharp / 2.6 broad; an override is a warning, kept even when the head then exceeds the total depth), Known Q / Known depth / Q vs. depth. Depths exact only (the published weir report agrees with the exact head).
+- Report: weir input rows and weir result fields; "Weir section" heading for weirs; Q vs. depth table width 99 % (100 % plus borders overflowed by 1 px and gave the preview a horizontal scrollbar).
+- Checked as real windows at 150 % and emulated 100 %: channel rating curve, weir results, weir Q vs. depth table, weir report preview.
+- CI: installs `.[gui]` with PySide6 pinned to 6.12.0, Qt's Linux libraries (libegl1, libgl1, libxkbcommon0, libfontconfig1, libdbus-1-3), `QT_QPA_PLATFORM=offscreen` and `PROFLOW_REQUIRE_GUI=1`, so `tests/test_gui.py` must run: a missing PySide6 fails collection (checked locally in an environment without PySide6).
+
+Next in slice 3.1: remaining channel shapes (circular, gutter, user-defined with composite n) and weir types (compound, circular, V-notch, Cipoletti, Sutro).

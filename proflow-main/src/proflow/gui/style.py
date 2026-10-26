@@ -39,6 +39,16 @@ CHEVRON = (ASSETS / "chevron-down.svg").as_posix()
 STYLESHEET = f"""
 QWidget {{ color: {INK}; }}
 QMainWindow, QWidget#page {{ background: {PANEL}; }}
+QFrame#sidebar {{ background: {CARD}; border-right: 1px solid {RULE}; }}
+QLabel#appName {{ font-size: 13pt; font-weight: 700; color: {ACCENT}; }}
+QLabel#navGroup {{ color: {FAINT}; font-size: 8pt; font-weight: 600;
+                  letter-spacing: 1px; padding: 6px 4px 2px 4px; }}
+QPushButton#nav {{ text-align: left; border: 0; border-radius: 6px;
+                  padding: 7px 10px; background: transparent; color: {MUTED}; }}
+QPushButton#nav:hover {{ background: {PANEL}; color: {INK}; }}
+QPushButton#nav:checked {{ background: {ACCENT_SOFT}; color: {ACCENT};
+                          font-weight: 600; }}
+QTabWidget#plotTabs QTabBar::tab {{ padding: 4px 12px; }}
 QFrame#card {{ background: {CARD}; border: 1px solid {RULE}; border-radius: 8px; }}
 QLabel#cardTitle {{ font-weight: 600; color: {INK}; padding-bottom: 2px; }}
 QLabel#screenTitle {{ font-size: 15pt; font-weight: 600; }}

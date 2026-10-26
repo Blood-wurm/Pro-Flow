@@ -68,8 +68,8 @@ def paint_plot(p: QPainter, rect: QRectF, spec: PlotSpec) -> None:
     x0, x1 = min(xs), max(xs)
     y0, y1 = min(ys), max(ys)
     xpad, ypad = (x1 - x0 or 1) * 0.04, (y1 - y0 or 1) * 0.12
-    xt = nice_ticks(x0 - xpad, x1 + xpad)
-    # Depth and flow axes that start at zero stay at zero.
+    xt = nice_ticks(x0 if x0 == 0 else x0 - xpad, x1 + xpad)
+    # Axes whose data starts at zero (depth, flow) start at zero.
     y_low = y0 if y0 == 0 else y0 - ypad * 0.3
     yt = nice_ticks(y_low, y1 + ypad)
     x0, x1, y0, y1 = xt[0], xt[-1], yt[0], yt[-1]
@@ -192,6 +192,7 @@ class PlotWidget(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._spec: PlotSpec | None = None
+        self.empty_text = "No result to plot."
         self.setMinimumHeight(260)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -204,4 +205,7 @@ class PlotWidget(QWidget):
         painter.fillRect(self.rect(), QColor(style.CARD))
         if self._spec is not None:
             paint_plot(painter, QRectF(self.rect()).adjusted(4, 4, -4, -4), self._spec)
+        else:
+            painter.setPen(QColor(style.FAINT))
+            painter.drawText(self.rect(), Qt.AlignCenter, self.empty_text)
         painter.end()

@@ -18,6 +18,7 @@ from proflow.model.express import (
     METHOD_STATUS,
     Calculation,
     ChannelInputs,
+    WeirInputs,
 )
 
 SECTION_IMAGE = "section.png"
@@ -65,6 +66,25 @@ def channel_input_rows(x: ChannelInputs) -> list[Row]:
     return rows
 
 
+def weir_input_rows(x: WeirInputs) -> list[Row]:
+    cw_source = "user" if x.cw is not None else f"default, {x.crest} crest"
+    rows = [
+        Row("Weir", "Rectangular"),
+        Row("Crest", x.crest.capitalize()),
+        Row("Bottom length", _f(x.bottom_length, 2), "ft"),
+        Row("Total depth", _f(x.total_depth, 2), "ft"),
+        Row("Weir coefficient, Cw", f"{x.weir_coefficient:.2f}", f"({cw_source})"),
+        Row("Compute by", COMPUTE_LABELS[x.compute_by]),
+    ]
+    if x.compute_by == "known_q":
+        rows.append(Row("Known Q", _f(x.known_q, 2), "cfs"))
+    elif x.compute_by == "known_depth":
+        rows.append(Row("Known depth", _f(x.known_depth, 3), "ft"))
+    else:
+        rows.append(Row("Increments", str(x.increments)))
+    return rows
+
+
 RESULT_FIELDS = (
     ("Depth", "depth", "ft"),
     ("Q", "flow", "cfs"),
@@ -76,6 +96,24 @@ RESULT_FIELDS = (
     ("EGL (depth + V²/2g)", "egl", "ft"),
     ("Froude number", "froude", ""),
 )
+WEIR_RESULT_FIELDS = (
+    ("Depth (head)", "depth", "ft"),
+    ("Q", "flow", "cfs"),
+    ("Area", "area", "ft²"),
+    ("Velocity", "velocity", "ft/s"),
+    ("Top width", "top_width", "ft"),
+    ("EGL (depth + V²/2g)", "egl", "ft"),
+)
+
+
+def result_fields(kind: str) -> tuple[tuple[str, str, str], ...]:
+    return RESULT_FIELDS if kind == "channel" else WEIR_RESULT_FIELDS
+
+
+def input_rows(calc: Calculation) -> list[Row]:
+    if calc.kind == "channel":
+        return channel_input_rows(calc.inputs)
+    return weir_input_rows(calc.inputs)
 
 
 def result_rows(calc: Calculation) -> list[Row]:
@@ -84,8 +122,7 @@ def result_rows(calc: Calculation) -> list[Row]:
         return []
     rows = [
         Row(label, _f(getattr(s, key)), unit)
-        for label, key, unit in RESULT_FIELDS
-        if hasattr(s, key)
+        for label, key, unit in result_fields(calc.kind)
     ]
     if hasattr(s, "regime"):
         rows.append(Row("Flow regime", s.regime))
@@ -106,7 +143,7 @@ def _rating_table(calc: Calculation) -> str:
     head = "".join(
         f"<th align='right' style='padding:4px 8px;border-bottom:1px solid {RULE}'>{html.escape(label)}"
         f"<br><span style='color:{MUTED};font-weight:normal'>{unit or '&nbsp;'}</span></th>"
-        for label, _, unit in RESULT_FIELDS
+        for label, _, unit in result_fields(calc.kind)
     )
     body = ""
     for i, s in enumerate(calc.rows):
@@ -115,11 +152,11 @@ def _rating_table(calc: Calculation) -> str:
             "<tr>"
             + "".join(
                 f"<td align='right' style='padding:3px 8px;{shade}'>{_f(getattr(s, key))}</td>"
-                for _, key, _ in RESULT_FIELDS
+                for _, key, _ in result_fields(calc.kind)
             )
             + "</tr>"
         )
-    return f"<table cellspacing='0' cellpadding='0' width='100%'><tr>{head}</tr>{body}</table>"
+    return f"<table cellspacing='0' cellpadding='0' width='99%'><tr>{head}</tr>{body}</table>"
 
 
 def report_html(
@@ -144,8 +181,7 @@ def report_html(
         "<table width='100%' cellspacing='0' cellpadding='0'><tr>",
         f"<td valign='top' width='48%'><h3 style='color:{ACCENT}'>Inputs</h3>",
     ]
-    rows = channel_input_rows(x) if calc.kind == "channel" else []
-    parts.append(_table(rows))
+    parts.append(_table(input_rows(calc)))
     parts.append(
         f"</td><td width='4%'></td><td valign='top' width='48%'><h3 style='color:{ACCENT}'>Results</h3>"
     )
@@ -168,9 +204,10 @@ def report_html(
             )
     if not calc.warnings:
         parts.append(f"<p style='color:{MUTED}'>Warnings: none.</p>")
+    section_heading = "Cross-section" if calc.kind == "channel" else "Weir section"
     if SECTION_IMAGE in images:
         parts.append(
-            f"<h3 style='color:{ACCENT}'>Cross-section</h3><p><img src='{images[SECTION_IMAGE]}' width='640'></p>"
+            f"<h3 style='color:{ACCENT}'>{section_heading}</h3><p><img src='{images[SECTION_IMAGE]}' width='640'></p>"
         )
     if RATING_IMAGE in images:
         parts.append(
@@ -180,9 +217,18 @@ def report_html(
         parts.append(
             f"<h3 style='color:{ACCENT}'>Q vs. depth</h3>{_rating_table(calc)}"
         )
+    if calc.kind == "channel":
+        basis = (
+            "Manning's equation with k = 1.486 (published Express reports reproduce "
+            "with 1.486; the Express manual prints 1.49)."
+        )
+    else:
+        basis = (
+            "Rectangular weir, Q = Cw L H^1.5 (Express manual ch. 6), no end "
+            "contractions."
+        )
     parts.append(
-        f"<p style='margin-top:14px;color:{MUTED};font-size:8pt'>Manning's equation with k = 1.486 "
-        "(published Express reports reproduce with 1.486; the Express manual prints 1.49). "
+        f"<p style='margin-top:14px;color:{MUTED};font-size:8pt'>{basis} "
         "US customary units.</p></div>"
     )
     return "".join(parts)
