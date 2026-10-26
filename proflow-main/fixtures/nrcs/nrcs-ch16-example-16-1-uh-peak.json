@@ -1,0 +1,44 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "nrcs-ch16-example-16-1-uh-peak",
+  "product": "NRCS NEH 630",
+  "product_version": "ch. 16, March 2007",
+  "completeness": "complete",
+  "method": "nrcs.uh.peak",
+  "source": {
+    "title": "NRCS NEH Part 630 ch. 16 Hydrographs (210-VI-NEH, March 2007)",
+    "url": "https://directives.nrcs.usda.gov/sites/default/files2/1712930620/7303.pdf",
+    "local_pdf": "reference/nrcs/NEH630-ch16-hydrographs.pdf",
+    "sha256": "315d67fd890d0b9213b925e3bb087fa4e87ccd2d9c90ab42f55be43b3bab7fc8",
+    "pdf_page": 16,
+    "example": "16-1, area A"
+  },
+  "inputs": {
+    "area": {
+      "value": 4.6,
+      "unit": "mi2"
+    },
+    "tc": {
+      "value": 2.3,
+      "unit": "hr"
+    },
+    "time_step": {
+      "value": 0.3,
+      "unit": "hr"
+    },
+    "tp_equation": "16A-7"
+  },
+  "expected": {
+    "tp": {
+      "value": "1.53",
+      "unit": "hr"
+    },
+    "qp": {
+      "value": "1455",
+      "unit": "cfs"
+    }
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "Tp = dD/2 + 0.6 Tc with dD = 0.3 h (0.133 Tc = 0.306, used 0.3); qp = 484 A / Tp."
+}

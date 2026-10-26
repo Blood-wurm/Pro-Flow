@@ -1,0 +1,30 @@
+{
+  "schema": "proflow-project",
+  "schema_version": 2,
+  "name": "EX-DP-7 Rational (public Hydrographs v2024 case)",
+  "settings": {"time_step": {"value": 1, "unit": "min"}},
+  "events": [5],
+  "rainfall": {
+    "idf_sets": [
+      {
+        "id": "printed-5yr",
+        "name": "Constant 3.693 in/hr: the intensity printed in the source report at Tc = 14 min. Not the Colorado Springs IDF file, which is unavailable.",
+        "form": "fha",
+        "curves": [{"return_period": 5, "b": 3.693, "d": 0, "e": 0}]
+      }
+    ]
+  },
+  "catchments": [
+    {
+      "id": "1",
+      "name": "EX-DP-7",
+      "method": "rational",
+      "idf": "printed-5yr",
+      "area": {"value": 8.17, "unit": "ac"},
+      "c": 0.39,
+      "tc": {"value": 14, "unit": "min"},
+      "ascending_limb_factor": 1,
+      "receding_limb_factor": 1
+    }
+  ]
+}

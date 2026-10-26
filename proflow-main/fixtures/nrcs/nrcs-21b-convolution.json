@@ -1,0 +1,143 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "nrcs-21b-convolution",
+  "product": "NRCS NEH 630",
+  "product_version": "ch. 21 app. 21B, May 2019",
+  "completeness": "complete",
+  "method": "uh.convolve",
+  "source": {
+    "title": "NRCS NEH Part 630 ch. 21 Design Hydrographs, appendix 21B (210-VI-NEH, Amend. 87, May 2019)",
+    "url": "https://directives.nrcs.usda.gov/sites/default/files2/1712930631/29119.pdf",
+    "local_pdf": "reference/nrcs/NEH630-ch21-design-hydrographs.pdf",
+    "sha256": "95570ae160eb4e5499410f99776cb701f2289680c3a79adf5265b063fd78e836",
+    "pdf_page": 50,
+    "tables": [
+      "21B-7"
+    ]
+  },
+  "inputs": {
+    "excess": {
+      "values": [
+        0.0,
+        0.013,
+        0.067,
+        0.127,
+        0.167,
+        0.197,
+        3.976,
+        4.576,
+        4.707,
+        4.756,
+        4.818,
+        4.794,
+        0.831,
+        0.832,
+        0.832,
+        0.832,
+        0.794,
+        0.832,
+        0.341,
+        0.341,
+        0.341,
+        0.303,
+        0.341,
+        0.341
+      ],
+      "unit": "in"
+    },
+    "unit_hydrograph": {
+      "values": [
+        0,
+        145,
+        450,
+        958,
+        1350,
+        1452,
+        1350,
+        1133,
+        813,
+        566,
+        407,
+        301,
+        213,
+        155,
+        112,
+        80,
+        58,
+        42,
+        30,
+        22,
+        22,
+        12,
+        9,
+        6,
+        3
+      ],
+      "unit": "cfs"
+    }
+  },
+  "expected": {
+    "flows": {
+      "values": [
+        "0",
+        "0",
+        "2",
+        "16",
+        "61",
+        "163",
+        "3335",
+        "1111",
+        "3156",
+        "7317",
+        "13276",
+        "19900",
+        "26248",
+        "31160",
+        "33503",
+        "32652",
+        "29426",
+        "25225",
+        "20972",
+        "17194",
+        "14318",
+        "12017",
+        "10041",
+        "8350",
+        "6992",
+        "5880",
+        "4992",
+        "4143",
+        "3311",
+        "2547",
+        "1892",
+        "1353",
+        "939",
+        "664",
+        "464",
+        "318",
+        "220",
+        "158",
+        "110",
+        "77",
+        "53",
+        "36",
+        "25",
+        "17",
+        "10",
+        "6",
+        "3",
+        "1",
+        "0"
+      ],
+      "unit": "cfs"
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Column (c) prints 22 cfs at hour 20 where table 21B-6 (and table 16-1: 0.011 x 1452) gives 16; the published convolution used 22, so 22 is the input here. The unit hydrograph itself is checked against 21B-6 in nrcs-21b-unit-hydrograph."
+  ],
+  "known_source_errors": {
+    "flows[6]": "printed 3335; the inputs give 334.7 and the printed column total 340,654 requires 335"
+  },
+  "notes": "Inputs are table 21B-7 columns (b) and (c) exactly as printed; outputs column (d). Excess at hour k+1 drives the unit hydrograph from hour k."
+}

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "proflow"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["numpy>=2.0"]
+
+[project.scripts]
+proflow = "proflow.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

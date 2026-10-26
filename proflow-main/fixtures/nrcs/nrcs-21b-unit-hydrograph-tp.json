@@ -1,0 +1,40 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "nrcs-21b-unit-hydrograph-tp",
+  "product": "NRCS NEH 630",
+  "product_version": "ch. 21 app. 21B, May 2019",
+  "completeness": "complete",
+  "method": "nrcs.uh.peak",
+  "source": {
+    "title": "NRCS NEH Part 630 ch. 21 Design Hydrographs, appendix 21B (210-VI-NEH, Amend. 87, May 2019)",
+    "url": "https://directives.nrcs.usda.gov/sites/default/files2/1712930631/29119.pdf",
+    "local_pdf": "reference/nrcs/NEH630-ch21-design-hydrographs.pdf",
+    "sha256": "95570ae160eb4e5499410f99776cb701f2289680c3a79adf5265b063fd78e836",
+    "pdf_page": 47,
+    "equation": "16A-10"
+  },
+  "inputs": {
+    "area": {
+      "value": 15.0,
+      "unit": "mi2"
+    },
+    "tc": {
+      "value": 7.1,
+      "unit": "hr"
+    },
+    "time_step": {
+      "value": 1,
+      "unit": "hr"
+    },
+    "tp_equation": "16A-10"
+  },
+  "expected": {
+    "tp": {
+      "value": "4.76",
+      "unit": "hr"
+    }
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "Tp = (Tc + dD)/1.7. The example then rounds Tp to 5 h for its unit hydrograph (see nrcs-21b-unit-hydrograph)."
+}

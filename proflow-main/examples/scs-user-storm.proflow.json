@@ -1,0 +1,51 @@
+{
+  "schema": "proflow-project",
+  "schema_version": 2,
+  "name": "Illustrative SCS catchment, curvilinear vs triangular unit hydrograph",
+  "settings": {"time_step": {"value": 2, "unit": "min"}},
+  "events": [2, 100],
+  "rainfall": {
+    "idf_sets": [],
+    "storms": [
+      {
+        "id": "five-point",
+        "name": "User-supplied mass curve: the 5-point distribution of NEH 630 app. 21B, table 21B-2. Depths are example inputs, not site data.",
+        "distribution": {
+          "times": {"values": [0, 6, 12, 18, 24], "unit": "hr"},
+          "fractions": [0, 0.053, 0.816, 0.947, 1.0]
+        },
+        "depths": [
+          {"return_period": 2, "depth": {"value": 3.0, "unit": "in"}},
+          {"return_period": 100, "depth": {"value": 7.0, "unit": "in"}}
+        ]
+      }
+    ]
+  },
+  "catchments": [
+    {
+      "id": "A-nrcs",
+      "name": "Basin A, NRCS curvilinear unit hydrograph",
+      "method": "scs",
+      "storm": "five-point",
+      "area": {"value": 50, "unit": "ac"},
+      "cn": 75,
+      "tc": {"value": 20, "unit": "min"},
+      "unit_hydrograph": "curvilinear",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2
+    },
+    {
+      "id": "A-tri",
+      "name": "Basin A, Hydraflow-described triangular unit hydrograph",
+      "method": "scs",
+      "storm": "five-point",
+      "area": {"value": 50, "unit": "ac"},
+      "cn": 75,
+      "tc": {"value": 20, "unit": "min"},
+      "unit_hydrograph": "triangular",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2,
+      "shape_factor": 484
+    }
+  ]
+}

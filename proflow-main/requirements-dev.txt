@@ -1,0 +1,13 @@
+# Proflow — Development Dependencies
+# Install: pip install -r requirements-dev.txt
+
+-r requirements.txt       # Include all project dependencies
+
+# ── Testing ──────────────────────────────────────────
+pytest>=8.0               # Test framework
+
+# ── Code Quality ─────────────────────────────────────
+ruff>=0.4                 # Linting and formatting
+
+# ── Packaging ────────────────────────────────────────
+pyinstaller>=6.0          # Build standalone executable

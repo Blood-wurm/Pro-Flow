@@ -1,0 +1,36 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "hydrographs-rational-ex-dp-7-5yr",
+  "product": "Hydraflow Hydrographs",
+  "product_version": "v2024",
+  "completeness": "complete",
+  "method": "hydrographs.rational.user_intensity",
+  "source": {
+    "title": "Hydrograph Report, Hyd. No. 1 'EX-DP-7 (5-YR)', dated 04/30/2025",
+    "url": "https://epcdevplanstorage.blob.core.windows.net/project/1fbd79ed-7dc4-4a7b-9933-e9dcdb12d93e/29b45105-8afc-4448-a62a-2957139e9ee2.pdf",
+    "local_pdf": "reference/public_cases/Hydrographs-rational-source.pdf",
+    "pdf_page": 58,
+    "sha256": "0ee092bd5311c8b370bb605c633a4f64ad5bab0c8ceeefb9f886601ced93c600"
+  },
+  "inputs": {
+    "area": {"value": 8.170, "unit": "ac"},
+    "c": {"value": 0.39, "unit": "-"},
+    "tc": {"value": 14.00, "unit": "min"},
+    "intensity": {"value": 3.693, "unit": "in/hr"},
+    "time_step": {"value": 1, "unit": "min"},
+    "ascending_limb_factor": {"value": 1, "unit": "-"},
+    "receding_limb_factor": {"value": 1, "unit": "-"}
+  },
+  "expected": {
+    "peak": {"value": "11.77", "unit": "cfs"},
+    "time_to_peak": {"value": "0.23", "unit": "hr"},
+    "volume": {"value": "9884", "unit": "ft3"}
+  },
+  "missing": [
+    "IDF file 'Colorado Springs.IDF' (case uses the printed intensity instead)"
+  ],
+  "assumptions": [
+    "Intensity 3.693 in/hr taken as printed; the IDF evaluation itself is not tested by this case"
+  ],
+  "notes": "Storm frequency 5 yrs; Tc by User. Report prints Asc/Rec limb fact = 1/1."
+}

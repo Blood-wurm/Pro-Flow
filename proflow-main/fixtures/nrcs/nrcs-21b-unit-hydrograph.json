@@ -1,0 +1,72 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "nrcs-21b-unit-hydrograph",
+  "product": "NRCS NEH 630",
+  "product_version": "ch. 21 app. 21B, May 2019",
+  "completeness": "complete",
+  "method": "nrcs.uh.curvilinear",
+  "source": {
+    "title": "NRCS NEH Part 630 ch. 21 Design Hydrographs, appendix 21B (210-VI-NEH, Amend. 87, May 2019)",
+    "url": "https://directives.nrcs.usda.gov/sites/default/files2/1712930631/29119.pdf",
+    "local_pdf": "reference/nrcs/NEH630-ch21-design-hydrographs.pdf",
+    "sha256": "95570ae160eb4e5499410f99776cb701f2289680c3a79adf5265b063fd78e836",
+    "pdf_page": 48,
+    "tables": [
+      "21B-5",
+      "21B-6"
+    ]
+  },
+  "inputs": {
+    "area": {
+      "value": 15.0,
+      "unit": "mi2"
+    },
+    "tp": {
+      "value": 5,
+      "unit": "hr"
+    },
+    "time_step": {
+      "value": 1,
+      "unit": "hr"
+    }
+  },
+  "expected": {
+    "qp": {
+      "value": "1452",
+      "unit": "cfs"
+    },
+    "ordinates": {
+      "values": [
+        "0",
+        "145",
+        "450",
+        "958",
+        "1350",
+        "1452",
+        "1350",
+        "1133",
+        "813",
+        "566",
+        "407",
+        "301",
+        "213",
+        "155",
+        "112",
+        "80",
+        "58",
+        "42",
+        "30",
+        "22",
+        "16",
+        "12",
+        "9",
+        "6",
+        "3"
+      ],
+      "unit": "cfs"
+    }
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "Table 16-1 scaled to Tp = 5 h (rounded by the example from 4.76 h) and qp = 484 x 15 / 5, linearly interpolated to 1-h steps (table 21B-6)."
+}

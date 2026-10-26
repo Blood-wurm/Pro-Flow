@@ -1,0 +1,32 @@
+# Local Autodesk media and investigation artifacts
+/installers/
+/analysis/
+
+# Reference PDFs are downloaded or supplied locally. Source URLs and fixture
+# provenance stay in the tracked Markdown and JSON files.
+*.pdf
+
+# Python environments, generated files, and test/tool caches
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/.tmp/
+**/build/
+**/dist/
+
+# Local settings and calculated output
+.env
+.env.*
+!.env.example
+**/results.json
+**/*.results.json
+
+# Editor and OS files
+**/.vscode/
+**/.idea/
+.DS_Store
+Thumbs.db
