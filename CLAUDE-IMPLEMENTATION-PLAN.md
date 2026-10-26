@@ -105,7 +105,7 @@ For each slice, implement input form, solver, result table, plot, and report tog
 
 ## Prioritization and decisions
 
-The whole suite is the scope, but ship one validated vertical slice at a time. Prioritize the existing hydrology engine and Express weir/channel work first because there are complete small references. Develop Hydrographs routing next, then Storm Sewers network hydraulics. Reuse shared rainfall, hydrograph, units, project, and reporting components across all three. If a source case lacks inputs or a method's validity range is unclear, mark that gap and continue with an independently documented case rather than tuning to a rounded output.
+The whole suite is the scope, but ship one validated vertical slice at a time. The original order placed Hydrographs routing before Storm Sewers; the user's current priority is to start Storm Sewers now, using the Express and hydrology foundation already built. Start with the versioned PFSUITE network exchange and one-pipe Storm Sewers workflow described in `CLAUDE.md`. Return to Hydrographs routing and remaining Express CLI work after that slice. Reuse shared rainfall, hydrograph, units, project, and reporting components across all three. If a source case lacks inputs or a method's validity range is unclear, mark that gap and continue with an independently documented case rather than tuning to a rounded output.
 
 ## Phase 2 public technical sources
 
