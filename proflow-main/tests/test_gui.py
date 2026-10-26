@@ -28,7 +28,11 @@ from proflow.gui.weir_panel import WEIR_EXAMPLE, WeirPanel  # noqa: E402
 def app():
     instance = QApplication.instance() or QApplication([])
     style.apply(instance)
-    return instance
+    yield instance
+    for widget in instance.topLevelWidgets():
+        widget.close()
+        widget.deleteLater()
+    instance.processEvents()
 
 
 @pytest.mark.parametrize(
