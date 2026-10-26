@@ -39,6 +39,7 @@ from proflow.engine.rainfall import MassCurve
 from proflow.engine.rational import peak_flow, standard_rational
 from proflow.engine.result import SolveResult, Status
 from proflow.engine.scs import excess_increments, runoff_depth
+from proflow.engine.storm_library import STANDARD_DISTRIBUTIONS
 from proflow.engine.weir import rectangular_depth
 from proflow.io.units import UnitError, from_internal, to_internal
 
@@ -146,6 +147,17 @@ def _idf_fha_fit(x: dict) -> SolveResult[Outputs]:
     return SolveResult(Status.SUCCESS, r.method, values, warnings=r.warnings)
 
 
+def _storm_standard_mass_curve(x: dict) -> SolveResult[Outputs]:
+    dist = STANDARD_DISTRIBUTIONS.get(x["distribution"])
+    if dist is None:
+        return SolveResult(
+            Status.INVALID_INPUT, "storm.standard/1", message="unknown distribution"
+        )
+    curve = dist.mass_curve(x["duration"])
+    values = {"fractions": np.atleast_1d(curve.fraction(x["times"]))}
+    return SolveResult(Status.SUCCESS, f"storm.standard.{dist.id}", values)
+
+
 def _uh_convolve(x: dict) -> SolveResult[Outputs]:
     flows = np.append(uh.convolve(x["excess"], x["unit_hydrograph"]), 0.0)
     return SolveResult(Status.SUCCESS, "uh.convolve/1", {"flows": flows})
@@ -243,6 +255,11 @@ METHODS: dict[str, Method] = {
             "e": "dimensionless",
         },
         run=_idf_fha_fit,
+    ),
+    "storm.standard.mass_curve": Method(
+        inputs={"distribution": None, "duration": "time", "times": "time"},
+        outputs={"fractions": "dimensionless"},
+        run=_storm_standard_mass_curve,
     ),
     "uh.convolve": Method(
         inputs={"excess": "depth", "unit_hydrograph": "flow"},

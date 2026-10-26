@@ -1,13 +1,15 @@
-"""Native Pro-Flow project model, schema "proflow-project" version 2.
+"""Native Pro-Flow project model, schema "proflow-project" version 3.
 
 The project holds user-entered inputs only; calculated values live in a
 separate results document. Dimensional inputs keep the unit they were entered
 in (see proflow.io.units.Quantity) and are normalized when calculated.
 
-Version 2 covers the rainfall library (FHA and polynomial IDF sets, and
-storms given as dimensionless mass curves with a depth per return period),
+Version 3 covers the rainfall library (FHA and polynomial IDF sets, and
+storms with a depth per return period whose distribution is either a
+user-supplied dimensionless mass curve or a named, source-backed distribution
+from proflow.engine.storm_library scaled to a duration),
 design events, calculation settings, and Rational, Modified Rational and SCS
-catchments. Version 1 files are read through proflow.io.migrations; saving
+catchments. Older files are read through proflow.io.migrations; saving
 always writes the current version. Structures, hydrographs, nodes, pipes and
 scenarios arrive in later versions.
 """
@@ -18,6 +20,7 @@ from dataclasses import dataclass, field
 
 from proflow.engine.idf import FhaCurve, IdfCurve, PolynomialCurve
 from proflow.engine.rainfall import MassCurve
+from proflow.engine.storm_library import STANDARD_DISTRIBUTIONS, StandardDistribution
 from proflow.engine.unit_hydrograph import SHAPE_FACTOR
 from proflow.io.migrations import CURRENT_VERSION, migrate
 from proflow.io.units import Quantity, UnitError, to_internal
@@ -72,7 +75,11 @@ class StormDepth:
 
 @dataclass(frozen=True)
 class StormDef:
-    """A user-supplied temporal distribution and its total depth per event."""
+    """A storm's temporal distribution and its total depth per event.
+
+    Either a user-supplied mass curve (times, fractions) or a named standard
+    distribution scaled to a duration; never both.
+    """
 
     id: str
     name: str
@@ -80,8 +87,17 @@ class StormDef:
     time_unit: str
     fractions: tuple[float, ...]
     depths: tuple[StormDepth, ...]
+    standard: str | None = None  # key of STANDARD_DISTRIBUTIONS
+    duration: Quantity | None = None  # time; with standard only
+
+    @property
+    def distribution(self) -> StandardDistribution | None:
+        return STANDARD_DISTRIBUTIONS.get(self.standard) if self.standard else None
 
     def mass_curve(self) -> MassCurve:
+        if self.standard is not None:
+            dist = STANDARD_DISTRIBUTIONS[self.standard]
+            return dist.mass_curve(self.duration.internal("time"))
         times = [to_internal("time", t, self.time_unit) for t in self.times]
         return MassCurve.from_table(times, self.fractions, self.name)
 
@@ -178,13 +194,17 @@ def _idf_set_dict(s: IdfSetDef) -> dict:
 
 
 def _storm_dict(s: StormDef) -> dict:
+    if s.standard is not None:
+        distribution = {"standard": s.standard, "duration": s.duration.to_dict()}
+    else:
+        distribution = {
+            "times": {"values": list(s.times), "unit": s.time_unit},
+            "fractions": list(s.fractions),
+        }
     return {
         "id": s.id,
         "name": s.name,
-        "distribution": {
-            "times": {"values": list(s.times), "unit": s.time_unit},
-            "fractions": list(s.fractions),
-        },
+        "distribution": distribution,
         "depths": [
             {"return_period": d.return_period, "depth": d.depth.to_dict()}
             for d in s.depths
@@ -382,7 +402,13 @@ class _Reader:
             if d is None:
                 continue
             dpath = f"{path}.distribution"
-            dist = self.obj(d.get("distribution"), dpath, {"times", "fractions"}) or {}
+            raw_dist = d.get("distribution")
+            if isinstance(raw_dist, dict) and "standard" in raw_dist:
+                storm = self.standard_storm(d, raw_dist, path, dpath)
+                if storm is not None:
+                    storms.append(storm)
+                continue
+            dist = self.obj(raw_dist, dpath, {"times", "fractions"}) or {}
             times = self.obj(dist.get("times"), f"{dpath}.times", {"values", "unit"})
             times = times or {"values": [], "unit": "hr"}
             storm = StormDef(
@@ -400,6 +426,33 @@ class _Reader:
             storms.append(storm)
         self.unique_ids(storms, "rainfall.storms")
         return tuple(storms)
+
+    def standard_storm(self, d, raw_dist, path, dpath) -> StormDef | None:
+        dist = self.obj(raw_dist, dpath, {"standard", "duration"})
+        if dist is None:
+            return None
+        standard = dist.get("standard")
+        if standard not in STANDARD_DISTRIBUTIONS:
+            self.fail(
+                f"{dpath}.standard",
+                f"unknown distribution {standard!r}; supported: "
+                f"{sorted(STANDARD_DISTRIBUTIONS)}",
+            )
+            standard = None
+        return StormDef(
+            id=self.text(d, "id", path),
+            name=d.get("name", ""),
+            times=(),
+            time_unit="",
+            fractions=(),
+            depths=tuple(self.storm_depths(d.get("depths"), path)),
+            standard=standard,
+            duration=(
+                self.quantity(dist, "duration", "time", dpath)
+                if "duration" in dist
+                else None
+            ),
+        )
 
     def storm_depths(self, data: object, path: str) -> list[StormDepth]:
         if not isinstance(data, list) or not data:

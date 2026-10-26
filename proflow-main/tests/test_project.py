@@ -81,7 +81,7 @@ def test_results_document_records_method_and_versions():
     project = load_project(EXAMPLE)
     doc = results_document(project, calculate(project))
     assert doc["schema"] == "proflow-results"
-    assert doc["project"]["schema_version"] == 2
+    assert doc["project"]["schema_version"] == 3
     assert doc["proflow_version"]
     (row,) = doc["results"]
     assert row["method"] == "rational.standard/2"
@@ -119,7 +119,7 @@ def test_cli_fixtures(capsys):
     "mutate,path,message",
     [
         (
-            lambda d: d.update(schema_version=3),
+            lambda d: d.update(schema_version=4),
             "project.schema_version",
             "not supported",
         ),

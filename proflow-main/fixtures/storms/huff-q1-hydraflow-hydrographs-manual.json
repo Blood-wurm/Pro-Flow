@@ -1,0 +1,26 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "huff-q1-hydraflow-hydrographs-manual",
+  "product": "Hydraflow Hydrographs",
+  "product_version": "Extension manual (reference/Hydraflow-Hydrographs-Manual.pdf)",
+  "completeness": "complete",
+  "method": "storm.standard.mass_curve",
+  "source": {
+    "title": "Hydraflow Hydrographs Extension manual, Huff Distributions, Huff 1st quartile table (printed pages 67-68), citing ISWS Bulletin 70/71 and Circular 173, Table 3.",
+    "url": null,
+    "local_pdf": "reference/Hydraflow-Hydrographs-Manual.pdf",
+    "pdf_page": 73,
+    "sha256": "3378fa6d86698a7416424fc7e22b596296a595ad734e1629d6195277b0e239ab"
+  },
+  "inputs": {
+    "distribution": "huff-q1-point-median-isws-c173-1990",
+    "duration": {"value": 100, "unit": "min"},
+    "times": {"values": [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100], "unit": "min"}
+  },
+  "expected": {
+    "fractions": {"values": ["0.0", "16", "33", "43", "52", "60", "66", "71", "75", "79", "82", "84", "86", "88", "90", "92", "94", "96", "97", "98", "100"], "unit": "%"}
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "The table continues onto PDF page 74. Shows Hydraflow tabulates the same ordinates as the ISWS sources, including the 0 and 100 % end points; it does not show how Hydraflow interpolates between them beyond 'interpolates between values as needed'."
+}

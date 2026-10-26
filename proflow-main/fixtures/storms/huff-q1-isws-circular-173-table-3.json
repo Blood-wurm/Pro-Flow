@@ -1,0 +1,26 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "huff-q1-isws-circular-173-table-3",
+  "product": "ISWS Circular 173",
+  "product_version": "1990",
+  "completeness": "complete",
+  "method": "storm.standard.mass_curve",
+  "source": {
+    "title": "Huff, F.A., 1990. Time Distributions of Heavy Rainstorms in Illinois. Illinois State Water Survey Circular 173. Table 3, Median Time Distributions of Heavy Storm Rainfall at a Point, first-quartile column (printed page 14).",
+    "url": "https://www.isws.illinois.edu/statecli/RF/circular173.pdf",
+    "local_pdf": "reference/isws/ISWS-Circular-173-1990.pdf",
+    "pdf_page": 18,
+    "sha256": "4771e9162e427b2e7adb2ed4f296a7738a3989d9ed662c8b6da7b62783a42cba"
+  },
+  "inputs": {
+    "distribution": "huff-q1-point-median-isws-c173-1990",
+    "duration": {"value": 100, "unit": "min"},
+    "times": {"values": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95], "unit": "min"}
+  },
+  "expected": {
+    "fractions": {"values": ["16", "33", "43", "52", "60", "66", "71", "75", "79", "82", "84", "86", "88", "90", "92", "94", "96", "97", "98"], "unit": "%"}
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "Transcribed from the scanned table (no text layer). A 100-min storm makes minutes equal percent of storm time. The table prints 5 to 95 %; 0 and 100 % are definitional. ISWS Bulletin 75 states that it supersedes the Circular 173 time distributions."
+}

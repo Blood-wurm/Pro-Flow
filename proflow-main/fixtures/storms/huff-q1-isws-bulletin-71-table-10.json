@@ -1,0 +1,26 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "huff-q1-isws-bulletin-71-table-10",
+  "product": "ISWS Bulletin 71",
+  "product_version": "1992 (MCC Research Report 92-03)",
+  "completeness": "complete",
+  "method": "storm.standard.mass_curve",
+  "source": {
+    "title": "Huff, F.A. and Angel, J.R., 1992. Rainfall Frequency Atlas of the Midwest. Illinois State Water Survey Bulletin 71. Table 10, Median Time Distributions of Heavy Storm Rainfall at a Point, first-quartile column.",
+    "url": "https://www.gcdcswm.com/data/standards/iswsb-71.pdf",
+    "local_pdf": "reference/isws/ISWS-Bulletin-71-1992.pdf",
+    "pdf_page": 29,
+    "sha256": "065282cae68e7506aa526d5a08a36a8263c418a698ba7ce77e5e3d579a78a499"
+  },
+  "inputs": {
+    "distribution": "huff-q1-point-median-isws-c173-1990",
+    "duration": {"value": 100, "unit": "min"},
+    "times": {"values": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95], "unit": "min"}
+  },
+  "expected": {
+    "fractions": {"values": ["16", "33", "43", "52", "60", "66", "71", "75", "79", "82", "84", "86", "88", "90", "92", "94", "96", "97", "98"], "unit": "%"}
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "Independent printing of the same median point distribution. The copy used is hosted by a third party (gcdcswm.com); its PDF metadata names Huff and Angel and the Midwestern Climate Center."
+}

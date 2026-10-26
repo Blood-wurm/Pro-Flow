@@ -36,6 +36,8 @@ class CatchmentResult:
     result: SolveResult[Hydrograph]
     # Method-specific values worth reporting, name -> (value, unit).
     quantities: dict[str, tuple[float, str]] = field(default_factory=dict)
+    # Where the inputs came from, e.g. the storm distribution and its source.
+    labels: dict[str, str] = field(default_factory=dict)
 
 
 def _rational(
@@ -95,14 +97,25 @@ def _scs(project: Project, c: ScsCatchment, event: int, dt: float) -> CatchmentR
         ia_ratio=c.ia_ratio,
         tp=None if c.tp is None else c.tp.internal("time"),
     )
+    dist = storm.distribution
+    labels = {"storm": storm.id}
+    if dist is not None:
+        labels |= {"storm_distribution": dist.id, "storm_source": dist.source}
+        if dist.status_note:
+            labels["storm_source_status"] = dist.status_note
+    else:
+        labels["storm_distribution"] = "user mass curve"
     if not r.ok:
         failed = SolveResult(r.status, r.method, message=r.message)
-        return CatchmentResult(c.id, event, failed)
+        return CatchmentResult(c.id, event, failed, labels=labels)
+    warnings = r.warnings
+    if dist is not None:
+        warnings += dist.duration_warnings(storm.duration.internal("time"))
     result = SolveResult(
         r.status,
         r.method,
         r.value.hydrograph,
-        warnings=r.warnings,
+        warnings=warnings,
         diagnostics=r.diagnostics,
     )
     quantities = {
@@ -110,7 +123,7 @@ def _scs(project: Project, c: ScsCatchment, event: int, dt: float) -> CatchmentR
         "runoff_depth": (r.diagnostics["runoff_depth_equation_in"], "in"),
         "unit_hydrograph_tp": (r.value.tp, "min"),
     }
-    return CatchmentResult(c.id, event, result, quantities)
+    return CatchmentResult(c.id, event, result, quantities, labels)
 
 
 def calculate(project: Project) -> list[CatchmentResult]:
@@ -142,6 +155,7 @@ def results_document(project: Project, results: list[CatchmentResult]) -> dict:
             "message": r.result.message,
             "diagnostics": dict(r.result.diagnostics),
         }
+        row |= dict(r.labels)
         row |= {name: _q(v, unit) for name, (v, unit) in r.quantities.items()}
         hyd = r.result.value
         if hyd is not None:

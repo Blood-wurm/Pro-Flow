@@ -1,0 +1,52 @@
+{
+  "schema": "proflow-project",
+  "schema_version": 3,
+  "name": "Illustrative SCS catchment, Huff first-quartile storm",
+  "settings": {"time_step": {"value": 1, "unit": "min"}},
+  "events": [2, 10, 100],
+  "rainfall": {
+    "idf_sets": [],
+    "storms": [
+      {
+        "id": "huff-q1-3h",
+        "name": "Huff first-quartile, 3 h. Depths are the Huff-1st row of the Hydraflow Rainfall Report for SedgwickCoKS.pcp (Storm Sewers source PDF p. 35); that report does not give the storm duration, so 3 h is illustrative.",
+        "distribution": {
+          "standard": "huff-q1-point-median-isws-c173-1990",
+          "duration": {"value": 3, "unit": "hr"}
+        },
+        "depths": [
+          {"return_period": 2, "depth": {"value": 1.55, "unit": "in"}},
+          {"return_period": 10, "depth": {"value": 4.0, "unit": "in"}},
+          {"return_period": 100, "depth": {"value": 8.0, "unit": "in"}}
+        ]
+      }
+    ]
+  },
+  "catchments": [
+    {
+      "id": "B-nrcs",
+      "name": "Basin B, NRCS curvilinear unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q1-3h",
+      "area": {"value": 20, "unit": "ac"},
+      "cn": 80,
+      "tc": {"value": 15, "unit": "min"},
+      "unit_hydrograph": "curvilinear",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2
+    },
+    {
+      "id": "B-tri",
+      "name": "Basin B, Hydraflow-described triangular unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q1-3h",
+      "area": {"value": 20, "unit": "ac"},
+      "cn": 80,
+      "tc": {"value": 15, "unit": "min"},
+      "unit_hydrograph": "triangular",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2,
+      "shape_factor": 484
+    }
+  ]
+}

@@ -9,13 +9,17 @@ a v1 reader rejects rainfall.storms, SCS catchments and ascending limb
 factors, so files that may contain them are v2. Migration writes the v2
 defaults explicitly and keeps any of those fields a v1 file already holds
 (pre-release builds wrote them under v1).
+
+v2 -> v3 (named standard storm distributions): a v2 reader rejects a storm
+distribution given as {"standard", "duration"}. Every v2 file is already a
+valid v3 file, so the step only sets the version.
 """
 
 from __future__ import annotations
 
 import copy
 
-CURRENT_VERSION = 2
+CURRENT_VERSION = 3
 
 SCS_DEFAULTS = {"tp_equation": "16A-10", "ia_ratio": 0.2}
 RATIONAL_DEFAULTS = {"ascending_limb_factor": 1.0, "receding_limb_factor": 1.0}
@@ -40,7 +44,12 @@ def _v1_to_v2(data: dict) -> dict:
     return data
 
 
-STEPS = {1: _v1_to_v2}
+def _v2_to_v3(data: dict) -> dict:
+    data["schema_version"] = 3
+    return data
+
+
+STEPS = {1: _v1_to_v2, 2: _v2_to_v3}
 
 
 def migrate(data: dict) -> tuple[dict, list[int]]:

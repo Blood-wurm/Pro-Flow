@@ -32,7 +32,7 @@ _FACTORS: dict[str, dict[str, float]] = {
     "intensity": {"in/hr": 1.0, "mm/hr": 1 / 25.4, "cm/hr": 1 / 2.54},
     "depth": {"in": 1.0, "mm": 1 / 25.4},
     "slope": {"ft/ft": 1.0, "%": 0.01},
-    "dimensionless": {"-": 1.0},
+    "dimensionless": {"-": 1.0, "%": 0.01},
 }
 
 INTERNAL_UNITS = {

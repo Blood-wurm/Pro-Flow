@@ -11,26 +11,27 @@ from proflow.model.project import SCHEMA_VERSION, Project, ProjectError
 
 HERE = Path(__file__).resolve().parent
 V1_FIRST_PASS = HERE / "data" / "v1-first-pass-rational.proflow.json"
-V2_EXAMPLES = HERE.parent / "examples"
+V2_SCS = HERE / "data" / "v2-scs-user-storm.proflow.json"
+EXAMPLES = HERE.parent / "examples"
 
 
 def _json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_current_version_is_2():
-    assert SCHEMA_VERSION == CURRENT_VERSION == 2
+def test_current_version_is_3():
+    assert SCHEMA_VERSION == CURRENT_VERSION == 3
 
 
 def test_first_pass_v1_file_migrates_with_explicit_defaults():
     v1 = _json(V1_FIRST_PASS)
-    v2, passed = migrate(v1)
-    assert passed == [1]
-    assert v2["schema_version"] == 2
-    assert v2["rainfall"]["storms"] == []
-    assert v2["catchments"][0]["ascending_limb_factor"] == 1.0
+    out, passed = migrate(v1)
+    assert passed == [1, 2]
+    assert out["schema_version"] == CURRENT_VERSION
+    assert out["rainfall"]["storms"] == []
+    assert out["catchments"][0]["ascending_limb_factor"] == 1.0
     # The entered receding factor is kept, not replaced by the default.
-    assert v2["catchments"][0]["receding_limb_factor"] == 1
+    assert out["catchments"][0]["receding_limb_factor"] == 1
 
 
 def test_migration_leaves_input_untouched():
@@ -40,22 +41,32 @@ def test_migration_leaves_input_untouched():
     assert v1 == before
 
 
-def test_v2_document_passes_through_unchanged():
-    v2 = _json(V2_EXAMPLES / "scs-user-storm.proflow.json")
+def test_current_document_passes_through_unchanged():
+    current = _json(EXAMPLES / "scs-user-storm.proflow.json")
+    out, passed = migrate(current)
+    assert passed == [] and out == current
+
+
+def test_v2_file_migrates_by_version_only():
+    v2 = _json(V2_SCS)
     out, passed = migrate(v2)
-    assert passed == [] and out == v2
+    assert passed == [2]
+    assert out == {**v2, "schema_version": 3}
+    assert Project.from_dict(v2) == load_project(
+        EXAMPLES / "scs-user-storm.proflow.json"
+    )
 
 
-def test_first_pass_v1_file_calculates_same_as_v2_example():
+def test_first_pass_v1_file_loads_same_as_current_example():
     old = load_project(V1_FIRST_PASS)
-    new = load_project(V2_EXAMPLES / "hydrographs-rational-ex-dp-7.proflow.json")
+    new = load_project(EXAMPLES / "hydrographs-rational-ex-dp-7.proflow.json")
     assert old == new
 
 
 def test_v1_file_with_new_fields_keeps_them():
     # Pre-release builds wrote storms, SCS catchments and non-default
     # optional values under v1.
-    data = _json(V2_EXAMPLES / "scs-user-storm.proflow.json")
+    data = _json(V2_SCS)
     data["schema_version"] = 1
     data["catchments"][0]["tp_equation"] = "16A-7"
     data["catchments"][0]["ia_ratio"] = 0.05
@@ -69,18 +80,18 @@ def test_v1_file_with_new_fields_keeps_them():
     assert tri.shape_factor == 484
 
 
-def test_v1_open_save_writes_v2(tmp_path):
+def test_v1_open_save_writes_current(tmp_path):
     project, version = read_project(V1_FIRST_PASS)
     assert version == 1
     out = tmp_path / "saved.proflow.json"
     save_project(project, out)
     saved = _json(out)
-    assert saved["schema_version"] == 2
+    assert saved["schema_version"] == CURRENT_VERSION
     assert saved["rainfall"]["storms"] == []
-    assert read_project(out) == (project, 2)
+    assert read_project(out) == (project, CURRENT_VERSION)
 
 
-@pytest.mark.parametrize("version", [0, 3, "2", None])
+@pytest.mark.parametrize("version", [0, 4, "2", None])
 def test_unknown_versions_rejected(version):
     data = _json(V1_FIRST_PASS)
     data["schema_version"] = version
@@ -100,10 +111,10 @@ def test_migrated_file_still_validated():
 def test_cli_notes_migration(capsys):
     assert main(["run", str(V1_FIRST_PASS)]) == EXIT_OK
     out = capsys.readouterr().out
-    assert "schema v1; read through migration, saving writes v2" in out
+    assert "schema v1; read through migration, saving writes v3" in out
     assert "Qp=11.77 cfs" in out
 
 
 def test_cli_quiet_for_current_version(capsys):
-    main(["run", str(V2_EXAMPLES / "scs-user-storm.proflow.json")])
+    main(["run", str(EXAMPLES / "scs-user-storm.proflow.json")])
     assert "migration" not in capsys.readouterr().out
