@@ -152,7 +152,7 @@ def paint_plot(p: QPainter, rect: QRectF, spec: PlotSpec) -> None:
     # legend
     x = area.left()
     y = rect.bottom() - legend_h + 4
-    for s in spec.series:
+    for s in (s for s in spec.series if s.name):
         if s.style == "water":
             p.fillRect(QRectF(x, y + 3, 18, fm.height() - 6), QBrush(style.WATER))
         elif s.style == "marker":

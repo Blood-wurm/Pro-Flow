@@ -1,0 +1,98 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-channel-sandiego-q100-channel",
+  "product": "Hydraflow Express",
+  "product_version": "Civil 3D 2013 extension; report dated Tuesday, Nov 21 2017",
+  "completeness": "complete",
+  "method": "express.channel.known_q",
+  "source": {
+    "title": "Channel Report, 'POST-DEVELOPMENT:  Q100 Channel', Trapezoidal, in San Diego County STP-15-026 SWQMP, PDP Part 7",
+    "url": "https://www.sandiegocounty.gov/content/dam/sdc/pds/ceqa/STP-15-026/SWQMP-PDP-Part-7.pdf",
+    "local_pdf": "reference/public_cases/express-more/sandiego-swqmp-part7.pdf",
+    "pdf_page": 2,
+    "sha256": "257273517b38815f6826d8ff58d4a2ffdfe386993ab60492ae9b615a541ced10"
+  },
+  "inputs": {
+    "section": "trapezoidal",
+    "bottom_width": {
+      "value": 23.4,
+      "unit": "ft"
+    },
+    "left_slope": {
+      "value": 3.0,
+      "unit": "-"
+    },
+    "right_slope": {
+      "value": 3.0,
+      "unit": "-"
+    },
+    "total_depth": {
+      "value": 4.25,
+      "unit": "ft"
+    },
+    "slope": {
+      "value": 0.2,
+      "unit": "%"
+    },
+    "n": {
+      "value": 0.06,
+      "unit": "-"
+    },
+    "known_q": {
+      "value": 111.1,
+      "unit": "cfs"
+    },
+    "depth_step": {
+      "value": 0.01,
+      "unit": "ft"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "2.25",
+      "unit": "ft",
+      "tolerance": 0.02097
+    },
+    "flow": {
+      "value": "111.10",
+      "unit": "cfs",
+      "tolerance": 0.005
+    },
+    "area": {
+      "value": "67.84",
+      "unit": "ft2",
+      "tolerance": 0.594862
+    },
+    "velocity": {
+      "value": "1.64",
+      "unit": "ft/s",
+      "tolerance": 0.019151
+    },
+    "wetted_perimeter": {
+      "value": "37.63",
+      "unit": "ft",
+      "tolerance": 0.106006
+    },
+    "critical_depth": {
+      "value": "0.86",
+      "unit": "ft",
+      "tolerance": 0.005
+    },
+    "top_width": {
+      "value": "36.90",
+      "unit": "ft",
+      "tolerance": 0.100822
+    },
+    "egl": {
+      "value": "2.29",
+      "unit": "ft",
+      "tolerance": 0.020252
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Tolerance per output = half its printed digit + its change when the slope moves by the 0.005 % hidden by the report's 0.01 % slope precision (computed on the exact solution). n-values are taken as typed exactly as printed.",
+    "depth_step 0.01 ft reproduces Express's reporting of iterated depths rounded up to the next 0.01 ft (critical depth always; known-Q normal depth for Manning sections, not gutters)."
+  ],
+  "notes": "Known-Q 'Q' is the input echoed."
+}

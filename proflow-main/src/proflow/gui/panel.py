@@ -35,7 +35,7 @@ from proflow.gui.plots import PlotWidget
 from proflow.gui.report import export_html, export_pdf, report_document
 from proflow.gui.widgets import STATUS_TEXT, card
 from proflow.model.express import METHOD_STATUS, Calculation
-from proflow.reports.express import result_fields
+from proflow.reports.express import field_label, result_fields
 
 
 class CalculatorPanel(QWidget):
@@ -135,8 +135,11 @@ class CalculatorPanel(QWidget):
         grid.setHorizontalSpacing(10)
         grid.setVerticalSpacing(5)
         self._value_labels = {}
+        self._field_labels = {}
         for i, (label, key, unit) in enumerate(self.fields):
-            grid.addWidget(QLabel(label, objectName="valueLabel"), i, 0)
+            name = QLabel(label, objectName="valueLabel")
+            grid.addWidget(name, i, 0)
+            self._field_labels[key] = (name, label)
             value = QLabel("–", objectName="value")
             value.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             value.setTextInteractionFlags(Qt.TextSelectableByMouse)
@@ -233,6 +236,8 @@ class CalculatorPanel(QWidget):
         self.status.setText(text)
         self.status.style().polish(self.status)
 
+        for key, (name, label) in self._field_labels.items():
+            name.setText(field_label(calc, label, key))
         state = calc.state
         for key, label in self._value_labels.items():
             label.setText("–" if state is None else f"{getattr(state, key):,.3f}")

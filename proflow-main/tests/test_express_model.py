@@ -71,7 +71,7 @@ def test_section_shape_follows_section_type():
         ({"known_q": 5000.0}, Status.UNSUPPORTED_REGIME),
         ({"slope_percent": 0.0}, Status.UNSUPPORTED_REGIME),
         ({"n": 0.0}, Status.INVALID_INPUT),
-        ({"section": "circular"}, Status.INVALID_INPUT),
+        ({"section": "parabolic"}, Status.INVALID_INPUT),
         ({"depth_reporting": "rounded"}, Status.INVALID_INPUT),
     ],
 )

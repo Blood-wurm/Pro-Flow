@@ -75,7 +75,8 @@ def test_channel_calculates_and_shows_mode(app):
 def test_channel_form_follows_section_and_mode(app):
     p = ChannelPanel()
     p.section.setCurrentIndex(1)  # triangular
-    assert not p.bottom_width.isEnabled() and p.left_slope.isEnabled()
+    assert not p.form.isRowVisible(p.bottom_width)
+    assert p.form.isRowVisible(p.left_slope)
     p.compute_by.setCurrentIndex(2)  # Q vs. depth
     assert p.mode_label.text() == "Increments"
     assert p.table_card.isVisibleTo(p) and p.table.rowCount() == 10
@@ -174,3 +175,75 @@ def test_report_preview_and_exports(app, tmp_path, panel):
 
 def test_examples_are_the_published_cases():
     assert CHANNEL_EXAMPLE.known_q == 21.33 and WEIR_EXAMPLE.known_q == 5.25
+
+
+# --- new shapes --------------------------------------------------------------
+
+
+def test_channel_rows_follow_each_section(app):
+    p = ChannelPanel()
+    expected = {
+        "circular": [p.diameter],
+        "gutter": [p.cross_slope, p.gutter_slope, p.gutter_width],
+        "user": [p.points_table],
+    }
+    for index, section in enumerate(
+        p.section.itemData(i) for i in range(p.section.count())
+    ):
+        p.section.setCurrentIndex(index)
+        for widget in expected.get(section, []):
+            assert p.form.isRowVisible(widget), section
+        assert p.form.isRowVisible(p.diameter) == (section == "circular")
+        assert p.form.isRowVisible(p.n) == (section != "user")
+
+
+def test_gutter_shows_spread_width(app):
+    p = ChannelPanel()
+    p.section.setCurrentIndex(4)  # gutter
+    p.slope.setValue(7.7)
+    p.n.setValue(0.013)
+    p.known_q.setValue(2.25)
+    assert p.calc.ok and p.calc.method.startswith("channel.hec22_gutter")
+    assert p._field_labels["top_width"][0].text() == "Spread width"
+    assert p.rating_plot._spec.note.startswith("HEC-22")
+
+
+def test_pipe_and_user_sections_calculate(app):
+    p = ChannelPanel()
+    p.section.setCurrentIndex(3)  # circular, 1.5 ft
+    p.n.setValue(0.013)  # the example's n of 0.050 limits this pipe to 3.6 cfs
+    p.known_q.setValue(4.0)
+    assert p.calc.ok and p.calc.method.startswith("channel.manning.known_q")
+    p.section.setCurrentIndex(5)  # user-defined example points
+    assert p.calc.ok and p.calc.method.startswith("channel.manning_composite")
+    p.points_table.table.item(1, 1).setText("abc")
+    assert not p.calc.ok and "point 2: elevation" in p.status.text()
+
+
+def test_weir_rows_and_crest_follow_type(app):
+    p = WeirPanel()
+    types = [p.weir_type.itemData(i) for i in range(p.weir_type.count())]
+    for index, t in enumerate(types):
+        p.weir_type.setCurrentIndex(index)
+        assert p.form.isRowVisible(p.angle) == (t == "v_notch")
+        assert p.form.isRowVisible(p.cw_row) == (
+            t in ("rectangular", "compound", "circular")
+        )
+    p.weir_type.setCurrentIndex(types.index("rectangular"))
+    p.crest.setCurrentIndex(1)  # broad
+    p.weir_type.setCurrentIndex(types.index("v_notch"))
+    assert p.crest.currentData() == "sharp"
+    assert not p.crest.model().item(1).isEnabled()
+
+
+def test_weir_types_calculate_and_explain(app):
+    p = WeirPanel()
+    types = [p.weir_type.itemData(i) for i in range(p.weir_type.count())]
+    p.known_q.setValue(1.0)
+    for index, t in enumerate(types):
+        p.weir_type.setCurrentIndex(index)
+        assert p.calc.method == f"weir.{t}/1"
+        assert p.calc.notes, t
+    p.weir_type.setCurrentIndex(types.index("proportional"))
+    p.known_q.setValue(0.01)  # below the flow at depth a
+    assert not p.calc.ok and "depth" in p.status.text()

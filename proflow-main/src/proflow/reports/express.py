@@ -16,6 +16,8 @@ from proflow import __version__
 from proflow.model.express import (
     COMPUTE_LABELS,
     METHOD_STATUS,
+    SECTION_LABELS,
+    WEIR_LABELS,
     Calculation,
     ChannelInputs,
     WeirInputs,
@@ -43,20 +45,38 @@ def _f(v: float, places: int = 3) -> str:
 
 
 def channel_input_rows(x: ChannelInputs) -> list[Row]:
-    rows = [Row("Section", x.section.capitalize())]
-    if x.section != "triangular":
+    rows = [Row("Section", SECTION_LABELS.get(x.section, x.section))]
+    if x.section in ("rectangular", "trapezoidal"):
         rows.append(Row("Bottom width", _f(x.bottom_width, 2), "ft"))
-    if x.section != "rectangular":
+    if x.section in ("triangular", "trapezoidal"):
         rows.append(
             Row("Side slopes (z:1)", f"{x.left_slope:g}, {x.right_slope:g}", "H:V")
         )
+    if x.section == "circular":
+        rows.append(Row("Diameter", _f(x.diameter, 2), "ft"))
+    if x.section == "gutter":
+        rows += [
+            Row("Cross slope, Sx", f"{x.cross_slope:.3f}", "ft/ft"),
+            Row("Gutter slope, Sw", f"{x.gutter_slope:.3f}", "ft/ft"),
+            Row("Gutter width", _f(x.gutter_width, 2), "ft"),
+        ]
+    if x.section == "user":
+        pts = "; ".join(
+            f"{s:g}, {e:g}" + (f", n {n:g}" if i else "")
+            for i, (s, e, n) in enumerate(x.points)
+        )
+        rows.append(Row("Points (sta, elev, n)", pts, "ft"))
+    if x.section in ("rectangular", "triangular", "trapezoidal") or (
+        x.section == "gutter" and x.compute_by == "rating"
+    ):
+        rows.append(Row("Total depth", _f(x.total_depth, 2), "ft"))
     rows += [
-        Row("Total depth", _f(x.total_depth, 2), "ft"),
-        Row("Invert elevation", _f(x.invert_elevation, 2), "ft"),
+        Row("Invert elevation", _f(x.invert, 2), "ft"),
         Row("Slope", _f(x.slope_percent, 3), "%"),
-        Row("Manning's n", f"{x.n:.3f}", ""),
-        Row("Compute by", COMPUTE_LABELS[x.compute_by]),
     ]
+    if x.section != "user":
+        rows.append(Row("Manning's n", f"{x.n:.3f}", ""))
+    rows.append(Row("Compute by", COMPUTE_LABELS[x.compute_by]))
     if x.compute_by == "known_q":
         rows.append(Row("Known Q", _f(x.known_q, 2), "cfs"))
     elif x.compute_by == "known_depth":
@@ -67,15 +87,33 @@ def channel_input_rows(x: ChannelInputs) -> list[Row]:
 
 
 def weir_input_rows(x: WeirInputs) -> list[Row]:
-    cw_source = "user" if x.cw is not None else f"default, {x.crest} crest"
-    rows = [
-        Row("Weir", "Rectangular"),
-        Row("Crest", x.crest.capitalize()),
-        Row("Bottom length", _f(x.bottom_length, 2), "ft"),
-        Row("Total depth", _f(x.total_depth, 2), "ft"),
-        Row("Weir coefficient, Cw", f"{x.weir_coefficient:.2f}", f"({cw_source})"),
-        Row("Compute by", COMPUTE_LABELS[x.compute_by]),
-    ]
+    t = x.weir_type
+    rows = [Row("Weir", WEIR_LABELS.get(t, t)), Row("Crest", x.crest.capitalize())]
+    if t in ("rectangular", "compound", "proportional"):
+        rows.append(Row("Bottom length", _f(x.bottom_length, 2), "ft"))
+    if t == "trapezoidal":
+        rows += [
+            Row("Bottom width", _f(x.bottom_length, 2), "ft"),
+            Row("Side slope, z", f"{x.side_slope:g}", "H:V"),
+        ]
+    if t == "compound":
+        rows += [
+            Row("Length, x", _f(x.notch_length, 2), "ft"),
+            Row("Depth, a", _f(x.notch_depth, 2), "ft"),
+        ]
+    if t == "proportional":
+        rows.append(Row("Depth, a", _f(x.notch_depth, 2), "ft"))
+    if t == "circular":
+        rows.append(Row("Diameter", _f(x.diameter, 2), "ft"))
+    if t == "v_notch":
+        rows.append(Row("Angle", f"{x.angle:g}", "deg"))
+    rows.append(Row("Total depth", _f(x.total_depth, 2), "ft"))
+    if t in ("rectangular", "compound", "circular"):
+        source = "user" if x.cw is not None else f"default, {x.crest} crest"
+        rows.append(
+            Row("Weir coefficient, Cw", f"{x.weir_coefficient:.2f}", f"({source})")
+        )
+    rows.append(Row("Compute by", COMPUTE_LABELS[x.compute_by]))
     if x.compute_by == "known_q":
         rows.append(Row("Known Q", _f(x.known_q, 2), "cfs"))
     elif x.compute_by == "known_depth":
@@ -116,12 +154,23 @@ def input_rows(calc: Calculation) -> list[Row]:
     return weir_input_rows(calc.inputs)
 
 
+def field_label(calc: Calculation, label: str, key: str) -> str:
+    """Express calls a gutter's top width its spread."""
+    if (
+        key == "top_width"
+        and calc.kind == "channel"
+        and calc.inputs.section == "gutter"
+    ):
+        return "Spread width"
+    return label
+
+
 def result_rows(calc: Calculation) -> list[Row]:
     s = calc.state
     if s is None:
         return []
     rows = [
-        Row(label, _f(getattr(s, key)), unit)
+        Row(field_label(calc, label, key), _f(getattr(s, key)), unit)
         for label, key, unit in result_fields(calc.kind)
     ]
     if hasattr(s, "regime"):
@@ -223,10 +272,11 @@ def report_html(
             "with 1.486; the Express manual prints 1.49)."
         )
     else:
-        basis = (
-            "Rectangular weir, Q = Cw L H^1.5 (Express manual ch. 6), no end "
-            "contractions."
-        )
+        basis = "Weir equations as printed in the Express manual, ch. 6."
+    if calc.kind == "channel" and calc.inputs.section == "gutter":
+        basis = "Gutter flow by the Express manual's HEC-22 gutter equation."
+    elif calc.kind == "channel" and calc.inputs.section == "user":
+        basis = "Manning's equation with composite n (HEC-RAS eq. 2-6), k = 1.486."
     parts.append(
         f"<p style='margin-top:14px;color:{MUTED};font-size:8pt'>{basis} "
         "US customary units.</p></div>"

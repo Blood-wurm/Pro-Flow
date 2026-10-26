@@ -3,7 +3,7 @@ import math
 import pytest
 
 from proflow import fixtures
-from proflow.engine import channel
+from proflow.engine import sections
 from proflow.engine.channel import (
     G,
     Trapezoid,
@@ -133,9 +133,9 @@ def test_invalid_inputs(call):
 def test_published_cases_reject_the_manuals_1_49(monkeypatch):
     """The Express fixtures must be able to tell 1.486 from 1.49."""
     cases = fixtures.discover(fixtures.FIXTURE_DIR / "express")
-    assert len(cases) == 10
+    assert len(cases) >= 10
     assert all(fixtures.run_fixture(f).status == "pass" for f in cases)
-    monkeypatch.setattr(channel, "K_MANNING", 1.49)
+    monkeypatch.setattr(sections, "K_MANNING", 1.49)
     failing = [f.id for f in cases if fixtures.run_fixture(f).status == "fail"]
     assert len(failing) >= 4, failing
 

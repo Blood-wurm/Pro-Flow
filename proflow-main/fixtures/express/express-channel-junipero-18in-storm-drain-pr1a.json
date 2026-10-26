@@ -1,0 +1,95 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-channel-junipero-18in-storm-drain-pr1a",
+  "product": "Hydraflow Express",
+  "product_version": "Civil 3D extension; report dated Friday, Nov 21 2025",
+  "completeness": "complete",
+  "method": "express.channel.known_q",
+  "source": {
+    "title": "Channel Report, '18 INCH STORM DRAIN(PR-1A)', Circular, in Drainage study for Junipero Serra Museum ADA Improvements (CEQAnet 334972-1)",
+    "url": "https://files.ceqanet.lci.ca.gov/334972-1/attachment/6jZM8kZATcx4F6sAP22xh4uqBJCh-8m2QmIVuc1LbiKD9Gvdp8wWu4loUIcxGaicyuQRRjj99-5slrDj0",
+    "local_pdf": "reference/public_cases/express-more/junipero-serra.pdf",
+    "pdf_page": 31,
+    "sha256": "e7aa48d3b4a9b92adbc0dd74079b17c3106a14a347884ca78d057824d434d773"
+  },
+  "inputs": {
+    "section": "circular",
+    "diameter": {
+      "value": 1.5,
+      "unit": "ft"
+    },
+    "slope": {
+      "value": 1.0,
+      "unit": "%"
+    },
+    "n": {
+      "value": 0.013,
+      "unit": "-"
+    },
+    "known_q": {
+      "value": 1.49,
+      "unit": "cfs"
+    },
+    "depth_step": {
+      "value": 0.01,
+      "unit": "ft"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "0.39",
+      "unit": "ft",
+      "tolerance": 0.005484,
+      "gate": false
+    },
+    "flow": {
+      "value": "1.490",
+      "unit": "cfs",
+      "tolerance": 0.0005,
+      "gate": false
+    },
+    "area": {
+      "value": "0.37",
+      "unit": "ft2",
+      "tolerance": 0.005632,
+      "gate": false
+    },
+    "velocity": {
+      "value": "4.03",
+      "unit": "ft/s",
+      "tolerance": 0.012498,
+      "gate": false
+    },
+    "wetted_perimeter": {
+      "value": "1.61",
+      "unit": "ft",
+      "tolerance": 0.006111,
+      "gate": false
+    },
+    "critical_depth": {
+      "value": "0.46",
+      "unit": "ft",
+      "tolerance": 0.005
+    },
+    "top_width": {
+      "value": "1.32",
+      "unit": "ft",
+      "tolerance": 0.005545,
+      "gate": false
+    },
+    "egl": {
+      "value": "0.64",
+      "unit": "ft",
+      "tolerance": 0.005497,
+      "gate": false
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Tolerance per output = half its printed digit + its change when the slope moves by the 0.005 % hidden by the report's 0.01 % slope precision (computed on the exact solution). n-values are taken as typed exactly as printed.",
+    "depth_step 0.01 ft reproduces Express's reporting of iterated depths rounded up to the next 0.01 ft (critical depth always; known-Q normal depth for Manning sections, not gutters).",
+    "No total depth is printed for a circular section; the diameter limits the depth.",
+    "Only critical depth is gated. Express's flow for this shape is not reproduced: at the depth its printed area and velocity imply, Pro-Flow's flow (Manning for pipes, the manual's gutter equation for gutters) is 0.6 to 6 % higher than the report's Q, not a constant factor and not explained by the documented equations. Depths are reported exact (printed = nearest 0.01 of the implied depth); critical depth rounded up, as for every shape."
+  ],
+  "notes": "Known-Q 'Q' is the input echoed."
+}

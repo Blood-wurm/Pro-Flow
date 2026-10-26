@@ -175,19 +175,39 @@ _CHANNEL_INPUTS = {
     "bottom_width": "length",
     "left_slope": "dimensionless",
     "right_slope": "dimensionless",
+    "diameter": "length",
+    "cross_slope": "slope",
+    "gutter_slope": "slope",
+    "gutter_width": "length",
     "total_depth": "length",
     "slope": "slope",
     "n": "dimensionless",
 }
-_CHANNEL_OPTIONAL = frozenset({"bottom_width", "left_slope", "right_slope"})
+_CHANNEL_OPTIONAL = frozenset(
+    {
+        "bottom_width",
+        "left_slope",
+        "right_slope",
+        "diameter",
+        "cross_slope",
+        "gutter_slope",
+        "gutter_width",
+        "total_depth",
+    }
+)
 
 
-def _section(x: dict) -> channel.Trapezoid:
+def _section(x: dict) -> channel.Section:
+    kind = x["section"]
+    if kind == "circular":
+        return channel.Circular(x["diameter"])
+    if kind == "gutter":
+        return channel.Gutter(x["cross_slope"], x["gutter_slope"], x["gutter_width"])
     b = x.get("bottom_width", 0.0)
     z1, z2 = x.get("left_slope", 0.0), x.get("right_slope", 0.0)
     expected = {"rectangular": z1 == z2 == 0, "triangular": b == 0}
-    if not expected.get(x["section"], True):
-        raise ValueError(f"inputs do not describe a {x['section']} section")
+    if not expected.get(kind, True):
+        raise ValueError(f"inputs do not describe a {kind} section")
     return channel.Trapezoid(b, z1, z2)
 
 
@@ -204,7 +224,7 @@ def _express_channel_known_q(x: dict) -> SolveResult[Outputs]:
     step = x.get("depth_step")
     return _channel_values(
         channel.normal_depth(
-            _section(x), x["known_q"], x["slope"], x["n"], x["total_depth"], step
+            _section(x), x["known_q"], x["slope"], x["n"], x.get("total_depth"), step
         )
     )
 
@@ -216,7 +236,7 @@ def _express_channel_known_depth(x: dict) -> SolveResult[Outputs]:
             x["known_depth"],
             x["slope"],
             x["n"],
-            x["total_depth"],
+            x.get("total_depth"),
             x.get("depth_step"),
         )
     )
@@ -225,7 +245,7 @@ def _express_channel_known_depth(x: dict) -> SolveResult[Outputs]:
 def _express_channel_rating_row(x: dict) -> SolveResult[Outputs]:
     r = channel.rating(
         _section(x),
-        x["total_depth"],
+        x.get("total_depth"),
         int(x["increments"]),
         x["slope"],
         x["n"],

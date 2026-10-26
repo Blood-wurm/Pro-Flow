@@ -1,0 +1,103 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-channel-junipero-cobble-swale-o1-nov21",
+  "product": "Hydraflow Express",
+  "product_version": "Civil 3D extension; report dated Friday, Nov 21 2025",
+  "completeness": "complete",
+  "method": "express.channel.known_q",
+  "source": {
+    "title": "Channel Report, 'EXISTING COBBLE SWALE(O-1)', Gutter, in Drainage study for Junipero Serra Museum ADA Improvements (CEQAnet 334972-1)",
+    "url": "https://files.ceqanet.lci.ca.gov/334972-1/attachment/6jZM8kZATcx4F6sAP22xh4uqBJCh-8m2QmIVuc1LbiKD9Gvdp8wWu4loUIcxGaicyuQRRjj99-5slrDj0",
+    "local_pdf": "reference/public_cases/express-more/junipero-serra.pdf",
+    "pdf_page": 29,
+    "sha256": "e7aa48d3b4a9b92adbc0dd74079b17c3106a14a347884ca78d057824d434d773"
+  },
+  "inputs": {
+    "section": "gutter",
+    "cross_slope": {
+      "value": 0.02,
+      "unit": "ft/ft"
+    },
+    "gutter_slope": {
+      "value": 0.08,
+      "unit": "ft/ft"
+    },
+    "gutter_width": {
+      "value": 2.0,
+      "unit": "ft"
+    },
+    "slope": {
+      "value": 7.9,
+      "unit": "%"
+    },
+    "n": {
+      "value": 0.013,
+      "unit": "-"
+    },
+    "known_q": {
+      "value": 2.57,
+      "unit": "cfs"
+    },
+    "depth_step": {
+      "value": 0.01,
+      "unit": "ft"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "0.21",
+      "unit": "ft",
+      "tolerance": 0.005021,
+      "gate": false
+    },
+    "flow": {
+      "value": "2.570",
+      "unit": "cfs",
+      "tolerance": 0.0005,
+      "gate": false
+    },
+    "area": {
+      "value": "0.33",
+      "unit": "ft2",
+      "tolerance": 0.005096,
+      "gate": false
+    },
+    "velocity": {
+      "value": "7.75",
+      "unit": "ft/s",
+      "tolerance": 0.007265,
+      "gate": false
+    },
+    "wetted_perimeter": {
+      "value": "4.82",
+      "unit": "ft",
+      "tolerance": 0.006066,
+      "gate": false
+    },
+    "critical_depth": {
+      "value": "0.34",
+      "unit": "ft",
+      "tolerance": 0.005
+    },
+    "top_width": {
+      "value": "4.60",
+      "unit": "ft",
+      "tolerance": 0.006045,
+      "gate": false
+    },
+    "egl": {
+      "value": "1.15",
+      "unit": "ft",
+      "tolerance": 0.005528,
+      "gate": false
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Tolerance per output = half its printed digit + its change when the slope moves by the 0.005 % hidden by the report's 0.01 % slope precision (computed on the exact solution). n-values are taken as typed exactly as printed.",
+    "depth_step 0.01 ft reproduces Express's reporting of iterated depths rounded up to the next 0.01 ft (critical depth always; known-Q normal depth for Manning sections, not gutters).",
+    "Express labels the gutter's top width 'Spread Width'. Gutter flow by HEC-22 (Express manual p. 42).",
+    "Only critical depth is gated. Express's flow for this shape is not reproduced: at the depth its printed area and velocity imply, Pro-Flow's flow (Manning for pipes, the manual's gutter equation for gutters) is 0.6 to 6 % higher than the report's Q, not a constant factor and not explained by the documented equations. Depths are reported exact (printed = nearest 0.01 of the implied depth); critical depth rounded up, as for every shape."
+  ],
+  "notes": "Known-Q 'Q' is the input echoed."
+}

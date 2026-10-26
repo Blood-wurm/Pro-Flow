@@ -1,0 +1,95 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-channel-sandiego-302-301-pipe",
+  "product": "Hydraflow Express",
+  "product_version": "Civil 3D 2013 extension; report dated Monday, Nov 20 2017",
+  "completeness": "complete",
+  "method": "express.channel.known_q",
+  "source": {
+    "title": "Channel Report, 'POST DEVELOPMENT: 302 to 301 Pipe Flow (3rd Assumption)', Circular, in San Diego County STP-15-026 SWQMP, PDP Part 7",
+    "url": "https://www.sandiegocounty.gov/content/dam/sdc/pds/ceqa/STP-15-026/SWQMP-PDP-Part-7.pdf",
+    "local_pdf": "reference/public_cases/express-more/sandiego-swqmp-part7.pdf",
+    "pdf_page": 1,
+    "sha256": "257273517b38815f6826d8ff58d4a2ffdfe386993ab60492ae9b615a541ced10"
+  },
+  "inputs": {
+    "section": "circular",
+    "diameter": {
+      "value": 1.5,
+      "unit": "ft"
+    },
+    "slope": {
+      "value": 0.5,
+      "unit": "%"
+    },
+    "n": {
+      "value": 0.01,
+      "unit": "-"
+    },
+    "known_q": {
+      "value": 4.74,
+      "unit": "cfs"
+    },
+    "depth_step": {
+      "value": 0.01,
+      "unit": "ft"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "0.75",
+      "unit": "ft",
+      "tolerance": 0.007191,
+      "gate": false
+    },
+    "flow": {
+      "value": "4.740",
+      "unit": "cfs",
+      "tolerance": 0.0005,
+      "gate": false
+    },
+    "area": {
+      "value": "0.89",
+      "unit": "ft2",
+      "tolerance": 0.008286,
+      "gate": false
+    },
+    "velocity": {
+      "value": "5.34",
+      "unit": "ft/s",
+      "tolerance": 0.025431,
+      "gate": false
+    },
+    "wetted_perimeter": {
+      "value": "2.36",
+      "unit": "ft",
+      "tolerance": 0.009382,
+      "gate": false
+    },
+    "critical_depth": {
+      "value": "0.84",
+      "unit": "ft",
+      "tolerance": 0.005
+    },
+    "top_width": {
+      "value": "1.50",
+      "unit": "ft",
+      "tolerance": 0.005053,
+      "gate": false
+    },
+    "egl": {
+      "value": "1.19",
+      "unit": "ft",
+      "tolerance": 0.006277,
+      "gate": false
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Tolerance per output = half its printed digit + its change when the slope moves by the 0.005 % hidden by the report's 0.01 % slope precision (computed on the exact solution). n-values are taken as typed exactly as printed.",
+    "depth_step 0.01 ft reproduces Express's reporting of iterated depths rounded up to the next 0.01 ft (critical depth always; known-Q normal depth for Manning sections, not gutters).",
+    "No total depth is printed for a circular section; the diameter limits the depth.",
+    "Only critical depth is gated. Express's flow for this shape is not reproduced: at the depth its printed area and velocity imply, Pro-Flow's flow (Manning for pipes, the manual's gutter equation for gutters) is 0.6 to 6 % higher than the report's Q, not a constant factor and not explained by the documented equations. Depths are reported exact (printed = nearest 0.01 of the implied depth); critical depth rounded up, as for every shape."
+  ],
+  "notes": "Known-Q 'Q' is the input echoed."
+}

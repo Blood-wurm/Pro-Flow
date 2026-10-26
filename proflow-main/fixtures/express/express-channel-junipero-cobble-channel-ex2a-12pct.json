@@ -1,0 +1,94 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-channel-junipero-cobble-channel-ex2a-12pct",
+  "product": "Hydraflow Express",
+  "product_version": "Civil 3D extension; report dated Thursday, Nov 20 2025",
+  "completeness": "complete",
+  "method": "express.channel.known_q",
+  "source": {
+    "title": "Channel Report, 'EXISTING COBBLE CHANNEL(EX-2A)', Triangular, in Drainage study for Junipero Serra Museum ADA Improvements (CEQAnet 334972-1)",
+    "url": "https://files.ceqanet.lci.ca.gov/334972-1/attachment/6jZM8kZATcx4F6sAP22xh4uqBJCh-8m2QmIVuc1LbiKD9Gvdp8wWu4loUIcxGaicyuQRRjj99-5slrDj0",
+    "local_pdf": "reference/public_cases/express-more/junipero-serra.pdf",
+    "pdf_page": 28,
+    "sha256": "e7aa48d3b4a9b92adbc0dd74079b17c3106a14a347884ca78d057824d434d773"
+  },
+  "inputs": {
+    "section": "triangular",
+    "left_slope": {
+      "value": 1.0,
+      "unit": "-"
+    },
+    "right_slope": {
+      "value": 1.0,
+      "unit": "-"
+    },
+    "total_depth": {
+      "value": 5.0,
+      "unit": "ft"
+    },
+    "slope": {
+      "value": 11.99,
+      "unit": "%"
+    },
+    "n": {
+      "value": 0.015,
+      "unit": "-"
+    },
+    "known_q": {
+      "value": 5.44,
+      "unit": "cfs"
+    },
+    "depth_step": {
+      "value": 0.01,
+      "unit": "ft"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "0.66",
+      "unit": "ft",
+      "tolerance": 0.005051
+    },
+    "flow": {
+      "value": "5.440",
+      "unit": "cfs",
+      "tolerance": 0.0005
+    },
+    "area": {
+      "value": "0.44",
+      "unit": "ft2",
+      "tolerance": 0.005066
+    },
+    "velocity": {
+      "value": "12.49",
+      "unit": "ft/s",
+      "tolerance": 0.007013
+    },
+    "wetted_perimeter": {
+      "value": "1.87",
+      "unit": "ft",
+      "tolerance": 0.005144
+    },
+    "critical_depth": {
+      "value": "1.13",
+      "unit": "ft",
+      "tolerance": 0.005
+    },
+    "top_width": {
+      "value": "1.32",
+      "unit": "ft",
+      "tolerance": 0.005102
+    },
+    "egl": {
+      "value": "3.08",
+      "unit": "ft",
+      "tolerance": 0.005754
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Tolerance per output = half its printed digit + its change when the slope moves by the 0.005 % hidden by the report's 0.01 % slope precision (computed on the exact solution). n-values are taken as typed exactly as printed.",
+    "depth_step 0.01 ft reproduces Express's reporting of iterated depths rounded up to the next 0.01 ft (critical depth always; known-Q normal depth for Manning sections, not gutters)."
+  ],
+  "notes": "Known-Q 'Q' is the input echoed."
+}

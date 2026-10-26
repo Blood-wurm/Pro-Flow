@@ -1,0 +1,59 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-rectangular-weir-forebay-dp-3-0",
+  "product": "Hydraflow Express",
+  "product_version": null,
+  "completeness": "complete",
+  "method": "express.weir.rectangular.known_q",
+  "source": {
+    "title": "Weir Report, 'Forebay @ DP 3.0 Notch', dated Monday, May 11 2020",
+    "url": "https://epcdevplanstorage.blob.core.windows.net/project/1e740e13-95df-43f4-bafb-1afe5e85e851/47025e01-cfe4-4f2f-bc76-477a4b08d872.pdf",
+    "local_pdf": "reference/public_cases/Express-rectangular-weir-source.pdf",
+    "pdf_page": 138,
+    "sha256": "501657668c9f4254da3acd7c2e5f508f6b67aaa2cabc4705cb482edce5344d09"
+  },
+  "inputs": {
+    "crest": "sharp",
+    "crest_length": {
+      "value": 1.5,
+      "unit": "ft"
+    },
+    "total_depth": {
+      "value": 1.5,
+      "unit": "ft"
+    },
+    "cw": {
+      "value": 3.33,
+      "unit": "-"
+    },
+    "flow": {
+      "value": 8.49,
+      "unit": "cfs"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "1.42",
+      "unit": "ft"
+    },
+    "flow": {
+      "value": "8.490",
+      "unit": "cfs"
+    },
+    "area": {
+      "value": "2.14",
+      "unit": "ft2"
+    },
+    "velocity": {
+      "value": "3.97",
+      "unit": "ft/s"
+    },
+    "top_width": {
+      "value": "1.50",
+      "unit": "ft"
+    }
+  },
+  "missing": [],
+  "assumptions": [],
+  "notes": "Report does not print the Express version. Equation per Express manual ch. 6: Q = Cw L H^1.5."
+}
