@@ -1,6 +1,6 @@
 # Phase 2 progress: rainfall and runoff foundation
 
-Status 2026-10-26: four slices done. Slice 1: limb and endpoint rules, mass-curve storms, incremental excess, NRCS unit hydrographs, convolution. Slice 2: SCS catchments in the project model and CLI, user-supplied storm library, hydrograph resampling and combination with volume checks. Slice 3: CI, IDF table import/export, FHA fit diagnostics. Slice 4: Huff first-quartile storm (source-checked), `.cds` import/export, schema v3. 246 tests pass, Ruff clean, `proflow fixtures` 23/23 complete cases pass. All methods remain **experimental**.
+Status 2026-10-26: five slices done. Slice 1: limb and endpoint rules, mass-curve storms, incremental excess, NRCS unit hydrographs, convolution. Slice 2: SCS catchments in the project model and CLI, user-supplied storm library, hydrograph resampling and combination with volume checks. Slice 3: CI, IDF table import/export, FHA fit diagnostics. Slice 4: Huff first-quartile storm (source-checked), `.cds` import/export, schema v3. Slice 5: Huff second to fourth quartiles (legacy, source-checked). Totals now in PHASE-3-PROGRESS.md. All methods remain **experimental**.
 
 ## Rules settled
 
@@ -63,6 +63,14 @@ Source discrepancy recorded, not edited: table 21B-7 column (c) prints 22 cfs at
 - **Project**: a storm distribution may be `{"standard": <id>, "duration": <time>}` instead of a mass curve. A v2 reader rejects that, so the schema is **v3**; v2 files migrate by version number only. `examples/scs-huff-q1.proflow.json` runs both unit-hydrograph forms for 2, 10, 100 yr with the Sedgwick report's Huff-1st depths and an illustrative 3 h duration; runoff volumes are within 0.3 % of Q x A.
 - **.cds**: `proflow storm import-cds` (makes a `rainfall.storms` entry, depths from `--depth RP=DEPTH`) and `proflow storm export-cds` (any project storm, any interval, at most 2,880 ratios), per the manual's format. The reader is strict where the manual is silent (one number per line, blank lines only at the end, ratios must not fall and must end at 1). Hydraflow requires the runoff step to equal the storm interval; Pro-Flow interpolates instead. `proflow storm list` shows each built-in distribution with its source and status.
 
+## Huff second to fourth quartiles (slice 5)
+
+- Every printed ordinate of the second-, third- and fourth-quartile columns (19 each) checked against ISWS Circular 173 Table 3 (re-read from the scan) and Bulletin 71 Table 10 (text layer): all 57 agree. Six fixtures in `fixtures/storms/`, one per quartile per source.
+- All four Huff curves are now labeled **legacy** (`legacy` flag, "legacy" in the name, results carry `storm_legacy`), since Bulletin 75 supersedes the Circular 173 / Bulletin 71 distributions. Ids unchanged: `huff-q{1-4}-point-median-isws-c173-1990`.
+- Each curve has its recommended duration range with sources: Q1 up to 6 h, Q2 over 6 to 12 h, Q3 over 12 to 24 h, Q4 over 24 h (Bulletin 71, Circular 173, and Hydraflow's own table agree on the split). Outside the range: a warning, not an error.
+- Hydraflow equivalence: Q1 matches the manual's printed table; Q2 to Q4 are **open** (`storm_hydraflow_check` says so in every result) because the manual does not print them.
+- `examples/scs-huff-quartiles.proflow.json`: each quartile at a duration inside its range (6, 12, 24, 48 h), same illustrative 6.0 in depth, both unit-hydrograph forms. Volumes within 0.14 % of Q x A; peak time as a fraction of storm duration 0.31, 0.47, 0.66, 0.85 for quartiles 1 to 4 (a test checks the order).
+
 ## Storm methods: status
 
 | Method | Hydraflow source | Status in Pro-Flow |
@@ -72,9 +80,9 @@ Source discrepancy recorded, not edited: table 21B-7 column (c) prints 22 cfs at
 | NRCS Type I, IA, II, III (24 h) | Manual names them; Hydraflow builds them from piecewise cubic polynomials whose coefficients it does not print (p. 77) | **Unsupported**: no official tabulation or coefficients in hand |
 | Type II FL (24 h) | Named only (p. 65) | **Unsupported**: no source |
 | SCS 6-hr | Named only (p. 65) | **Unsupported**: no source |
-| Synthetic (IDF-based) | Method described: IDF depth increments over the interval, largest near the centre, others alternating symmetrically; duration ≥ 2 Tc and ≤ 6 h (pp. 66, 77) | **Unsupported until a complete output case** is found to test block ordering |
+| Synthetic (IDF-based) | Method described: IDF depth increments over the interval, largest near the centre, others alternating symmetrically; duration ≥ 2 Tc and ≤ 6 h (pp. 66, 77) | **Experimental / not built** until a complete output case can check the block ordering |
 | Huff 1st quartile | Manual p. 67-68 prints the cumulative table, citing ISWS Bulletin 70/71 and Circular 173, Table 3 | **Supported**, checked against all three sources (point, median) |
-| Huff 2nd, 3rd, 4th quartile | Cited by Hydraflow but not printed in its manual | Unsupported. **Now sourced**: Circular 173 Table 3 and Bulletin 71 Table 10 print all three columns, so they can be added the same way; Hydraflow's own values cannot be confirmed from its manual |
+| Huff 2nd, 3rd, 4th quartile | Cited by Hydraflow but not printed in its manual | **Supported** (legacy), checked against Circular 173 Table 3 and Bulletin 71 Table 10; Hydraflow equivalence open |
 | Huff Indy | Named only ("used primarily in Indianapolis") | **Unsupported**: no source identified |
 
 The Hydraflow Rainfall Report above also prints that project's precipitation table (SCS 24-hour, SCS 6-hr, Huff-1st, Huff-Indy and Custom depths per return period), a possible source of check depths once those distributions exist.

@@ -1,0 +1,249 @@
+{
+  "schema": "proflow-project",
+  "schema_version": 3,
+  "name": "Illustrative SCS catchment, Huff quartiles 1 to 4 (legacy ISWS curves)",
+  "settings": {
+    "time_step": {
+      "value": 5,
+      "unit": "min"
+    }
+  },
+  "events": [
+    100
+  ],
+  "rainfall": {
+    "idf_sets": [],
+    "storms": [
+      {
+        "id": "huff-q1-6h",
+        "name": "Huff quartile 1, 6 h (legacy ISWS Circular 173 curve). Depth is an example input, the same for all four storms so only the distribution differs.",
+        "distribution": {
+          "standard": "huff-q1-point-median-isws-c173-1990",
+          "duration": {
+            "value": 6,
+            "unit": "hr"
+          }
+        },
+        "depths": [
+          {
+            "return_period": 100,
+            "depth": {
+              "value": 6.0,
+              "unit": "in"
+            }
+          }
+        ]
+      },
+      {
+        "id": "huff-q2-12h",
+        "name": "Huff quartile 2, 12 h (legacy ISWS Circular 173 curve). Depth is an example input, the same for all four storms so only the distribution differs.",
+        "distribution": {
+          "standard": "huff-q2-point-median-isws-c173-1990",
+          "duration": {
+            "value": 12,
+            "unit": "hr"
+          }
+        },
+        "depths": [
+          {
+            "return_period": 100,
+            "depth": {
+              "value": 6.0,
+              "unit": "in"
+            }
+          }
+        ]
+      },
+      {
+        "id": "huff-q3-24h",
+        "name": "Huff quartile 3, 24 h (legacy ISWS Circular 173 curve). Depth is an example input, the same for all four storms so only the distribution differs.",
+        "distribution": {
+          "standard": "huff-q3-point-median-isws-c173-1990",
+          "duration": {
+            "value": 24,
+            "unit": "hr"
+          }
+        },
+        "depths": [
+          {
+            "return_period": 100,
+            "depth": {
+              "value": 6.0,
+              "unit": "in"
+            }
+          }
+        ]
+      },
+      {
+        "id": "huff-q4-48h",
+        "name": "Huff quartile 4, 48 h (legacy ISWS Circular 173 curve). Depth is an example input, the same for all four storms so only the distribution differs.",
+        "distribution": {
+          "standard": "huff-q4-point-median-isws-c173-1990",
+          "duration": {
+            "value": 48,
+            "unit": "hr"
+          }
+        },
+        "depths": [
+          {
+            "return_period": 100,
+            "depth": {
+              "value": 6.0,
+              "unit": "in"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "catchments": [
+    {
+      "id": "Q1-nrcs",
+      "name": "Basin C, Huff quartile 1, curvilinear unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q1-6h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "curvilinear",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2
+    },
+    {
+      "id": "Q1-tri",
+      "name": "Basin C, Huff quartile 1, triangular unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q1-6h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "triangular",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2,
+      "shape_factor": 484
+    },
+    {
+      "id": "Q2-nrcs",
+      "name": "Basin C, Huff quartile 2, curvilinear unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q2-12h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "curvilinear",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2
+    },
+    {
+      "id": "Q2-tri",
+      "name": "Basin C, Huff quartile 2, triangular unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q2-12h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "triangular",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2,
+      "shape_factor": 484
+    },
+    {
+      "id": "Q3-nrcs",
+      "name": "Basin C, Huff quartile 3, curvilinear unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q3-24h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "curvilinear",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2
+    },
+    {
+      "id": "Q3-tri",
+      "name": "Basin C, Huff quartile 3, triangular unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q3-24h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "triangular",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2,
+      "shape_factor": 484
+    },
+    {
+      "id": "Q4-nrcs",
+      "name": "Basin C, Huff quartile 4, curvilinear unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q4-48h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "curvilinear",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2
+    },
+    {
+      "id": "Q4-tri",
+      "name": "Basin C, Huff quartile 4, triangular unit hydrograph",
+      "method": "scs",
+      "storm": "huff-q4-48h",
+      "area": {
+        "value": 100,
+        "unit": "ac"
+      },
+      "cn": 75,
+      "tc": {
+        "value": 60,
+        "unit": "min"
+      },
+      "unit_hydrograph": "triangular",
+      "tp_equation": "16A-10",
+      "ia_ratio": 0.2,
+      "shape_factor": 484
+    }
+  ]
+}

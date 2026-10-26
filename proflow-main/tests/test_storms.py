@@ -25,7 +25,7 @@ def _data():
 
 
 def test_registry_holds_only_sourced_distributions():
-    assert set(STANDARD_DISTRIBUTIONS) == {HUFF_ID}
+    assert HUFF_ID in STANDARD_DISTRIBUTIONS
     d = STANDARD_DISTRIBUTIONS[HUFF_ID]
     assert "Circular 173" in d.source and "Table 3" in d.source
     assert "Bulletin 75" in d.status_note
@@ -50,7 +50,7 @@ def test_huff_is_front_loaded():
 def test_duration_guidance():
     assert HUFF_Q1_POINT_C173.duration_warnings(360) == ()
     (w,) = HUFF_Q1_POINT_C173.duration_warnings(12 * 60)
-    assert "6 h or less" in w and "Bulletin 71" in w
+    assert "up to 6 h" in w and "Bulletin 71" in w
 
 
 def test_bad_duration():
@@ -172,7 +172,7 @@ def test_long_huff_storm_warns():
         "unit": "hr",
     }
     r = calculate(Project.from_dict(data))[0]
-    assert r.result.ok and any("6 h or less" in w for w in r.result.warnings)
+    assert r.result.ok and any("up to 6 h" in w for w in r.result.warnings)
 
 
 def test_metric_duration_and_depth():
@@ -267,3 +267,81 @@ def test_cli_export_cds(tmp_path):
     assert interval == 5 and curve.duration == 180
     assert curve.fraction(45) == pytest.approx(0.60)  # 25 % of 3 h
     assert curve.fraction(90) == pytest.approx(0.82)  # 50 % of 3 h
+
+
+# --- Huff quartiles 2 to 4 ---------------------------------------------------
+
+from proflow.engine.storm_library import (  # noqa: E402
+    HUFF_Q2_POINT_C173,
+    HUFF_Q3_POINT_C173,
+    HUFF_Q4_POINT_C173,
+)
+
+QUARTILES = HERE.parent / "examples" / "scs-huff-quartiles.proflow.json"
+ALL_HUFF = [
+    HUFF_Q1_POINT_C173,
+    HUFF_Q2_POINT_C173,
+    HUFF_Q3_POINT_C173,
+    HUFF_Q4_POINT_C173,
+]
+
+
+@pytest.mark.parametrize("q", [1, 2, 3, 4])
+def test_each_quartile_labeled_legacy_with_source(q):
+    d = STANDARD_DISTRIBUTIONS[f"huff-q{q}-point-median-isws-c173-1990"]
+    assert d.legacy and "legacy" in d.name
+    assert "Bulletin 75" in d.status_note
+    assert "Circular 173, Table 3" in d.source and "Bulletin 71" in d.source
+    if q == 1:
+        assert d.hydraflow_check.startswith("Matches")
+    else:
+        assert d.hydraflow_check.startswith("Open")
+
+
+@pytest.mark.parametrize(
+    "dist,ok,warns",
+    [
+        (HUFF_Q2_POINT_C173, [6.1, 12], [6, 12.5]),
+        (HUFF_Q3_POINT_C173, [12.1, 24], [12, 30]),
+        (HUFF_Q4_POINT_C173, [24.1, 96], [24, 6]),
+    ],
+)
+def test_quartile_duration_ranges(dist, ok, warns):
+    for hours in ok:
+        assert dist.duration_warnings(hours * 60) == (), hours
+    for hours in warns:
+        assert dist.duration_warnings(hours * 60), hours
+
+
+def test_quartile_example_round_trips_and_runs_clean():
+    project = load_project(QUARTILES)
+    assert project.to_dict() == json.loads(QUARTILES.read_text(encoding="utf-8"))
+    results = calculate(project)
+    assert len(results) == 8
+    for r in results:
+        assert r.result.ok and r.result.warnings == (), r.result.warnings
+        depth = r.quantities["runoff_depth"][0]
+        assert r.result.value.volume == pytest.approx(
+            depth * 100 * CUFT_PER_INCH_ACRE, rel=0.01
+        )
+
+
+def test_later_quartiles_peak_later_in_the_storm():
+    project = load_project(QUARTILES)
+    hours = {"Q1": 6, "Q2": 12, "Q3": 24, "Q4": 48}
+    for form in ("nrcs", "tri"):
+        rel = [
+            r.result.value.time_to_peak / (hours[r.catchment[:2]] * 60)
+            for r in calculate(project)
+            if r.catchment.endswith(form)
+        ]
+        assert rel == sorted(rel) and len(set(rel)) == 4, rel
+
+
+def test_quartile_results_carry_legacy_and_hydraflow_labels():
+    project = load_project(QUARTILES)
+    rows = results_document(project, calculate(project))["results"]
+    for row in rows:
+        assert row["storm_legacy"] == "yes"
+        open_check = row["storm_hydraflow_check"].startswith("Open")
+        assert open_check == (not row["catchment"].startswith("Q1"))

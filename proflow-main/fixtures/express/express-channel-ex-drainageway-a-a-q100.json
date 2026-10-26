@@ -1,0 +1,94 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "express-channel-ex-drainageway-a-a-q100",
+  "product": "Hydraflow Express",
+  "product_version": "Civil 3D extension; report dated Tuesday, Jun 17 2025",
+  "completeness": "complete",
+  "method": "express.channel.known_q",
+  "source": {
+    "title": "Channel Report, 'EX DRAINAGEWAY SEC A-A @ Q100', Triangular, invert elev 6898.70 ft",
+    "url": "https://epcdevplanstorage.blob.core.windows.net/project/1fbd79ed-7dc4-4a7b-9933-e9dcdb12d93e/29b45105-8afc-4448-a62a-2957139e9ee2.pdf",
+    "local_pdf": "reference/public_cases/Hydrographs-rational-source.pdf",
+    "sha256": "0ee092bd5311c8b370bb605c633a4f64ad5bab0c8ceeefb9f886601ced93c600",
+    "pdf_page": 82
+  },
+  "inputs": {
+    "section": "triangular",
+    "left_slope": {
+      "value": 10,
+      "unit": "-"
+    },
+    "right_slope": {
+      "value": 10,
+      "unit": "-"
+    },
+    "total_depth": {
+      "value": 4.0,
+      "unit": "ft"
+    },
+    "slope": {
+      "value": 2.0,
+      "unit": "%"
+    },
+    "n": {
+      "value": 0.05,
+      "unit": "-"
+    },
+    "known_q": {
+      "value": 42.65,
+      "unit": "cfs"
+    },
+    "depth_step": {
+      "value": 0.01,
+      "unit": "ft"
+    }
+  },
+  "expected": {
+    "depth": {
+      "value": "1.20",
+      "unit": "ft",
+      "tolerance": 0.005562
+    },
+    "flow": {
+      "value": "42.65",
+      "unit": "cfs",
+      "tolerance": 0.005
+    },
+    "area": {
+      "value": "14.40",
+      "unit": "ft2",
+      "tolerance": 0.018461
+    },
+    "velocity": {
+      "value": "2.96",
+      "unit": "ft/s",
+      "tolerance": 0.007792
+    },
+    "wetted_perimeter": {
+      "value": "24.12",
+      "unit": "ft",
+      "tolerance": 0.016297
+    },
+    "critical_depth": {
+      "value": "1.03",
+      "unit": "ft",
+      "tolerance": 0.005
+    },
+    "top_width": {
+      "value": "24.00",
+      "unit": "ft",
+      "tolerance": 0.016241
+    },
+    "egl": {
+      "value": "1.34",
+      "unit": "ft",
+      "tolerance": 0.005304
+    }
+  },
+  "missing": [],
+  "assumptions": [
+    "Tolerance per output = half its printed digit + its change when the slope moves by the 0.005 % hidden by the report's 0.01 % slope precision (computed on the exact solution). n-values are taken as typed exactly as printed.",
+    "depth_step 0.01 ft reproduces Express's reporting of iterated depths (known-Q normal depth and critical depth) rounded up to the next 0.01 ft, observed in published reports (critical depth: 10 of 10 reports; rounding to nearest matches 4) and not documented in the manual."
+  ],
+  "notes": "Manning's k = 1.486 (the manual prints 1.49; these reports reproduce with 1.486). Known-Q 'Q' is the input echoed."
+}

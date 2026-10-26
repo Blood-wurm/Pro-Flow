@@ -101,8 +101,12 @@ def _scs(project: Project, c: ScsCatchment, event: int, dt: float) -> CatchmentR
     labels = {"storm": storm.id}
     if dist is not None:
         labels |= {"storm_distribution": dist.id, "storm_source": dist.source}
+        if dist.legacy:
+            labels["storm_legacy"] = "yes"
         if dist.status_note:
             labels["storm_source_status"] = dist.status_note
+        if dist.hydraflow_check:
+            labels["storm_hydraflow_check"] = dist.hydraflow_check
     else:
         labels["storm_distribution"] = "user mass curve"
     if not r.ok:

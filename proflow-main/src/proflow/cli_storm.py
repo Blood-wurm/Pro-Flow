@@ -20,11 +20,16 @@ def _list(args: argparse.Namespace) -> int:
         print(d.id)
         print(f"  {d.name}")
         print(f"  source: {d.source}")
-        if d.max_duration_min is not None:
-            limit = d.max_duration_min / 60
-            print(f"  recommended up to {limit:g} h: {d.duration_guidance}")
+        if d.recommended_duration_min is not None:
+            low, high = (v / 60 for v in d.recommended_duration_min)
+            span = f"{low:g} h < duration" + (
+                "" if high == float("inf") else f" <= {high:g} h"
+            )
+            print(f"  recommended: {span} ({d.duration_guidance})")
         if d.status_note:
-            print(f"  note: {d.status_note}")
+            print(f"  status: {d.status_note}")
+        if d.hydraflow_check:
+            print(f"  Hydraflow: {d.hydraflow_check}")
     return EXIT_OK
 
 

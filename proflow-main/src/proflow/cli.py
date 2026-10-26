@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from proflow import cli_idf, cli_storm, fixtures
+from proflow import cli_channel, cli_idf, cli_storm, fixtures
 from proflow.calculate import calculate, results_document
 from proflow.io.project_json import read_project, write_json
 from proflow.model.project import SCHEMA_VERSION, ProjectError
@@ -96,6 +96,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cli_idf.add_parser(sub)
     cli_storm.add_parser(sub)
+    cli_channel.add_parser(sub)
 
     args = parser.parse_args(argv)
     return args.func(args)

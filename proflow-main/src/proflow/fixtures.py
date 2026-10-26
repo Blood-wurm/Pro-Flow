@@ -33,6 +33,7 @@ from pathlib import Path
 
 import numpy as np
 
+from proflow.engine import channel
 from proflow.engine import unit_hydrograph as uh
 from proflow.engine.idf import FhaCurve, fit_fha_report
 from proflow.engine.rainfall import MassCurve
@@ -64,6 +65,7 @@ class Method:
     inputs: dict[str, str | None]  # name -> quantity kind, None if categorical
     outputs: dict[str, str]
     run: Callable[[dict], SolveResult[Outputs]]
+    optional: frozenset[str] = frozenset()  # inputs a complete case may omit
 
 
 def _express_weir_known_q(x: dict) -> SolveResult[Outputs]:
@@ -156,6 +158,85 @@ def _storm_standard_mass_curve(x: dict) -> SolveResult[Outputs]:
     curve = dist.mass_curve(x["duration"])
     values = {"fractions": np.atleast_1d(curve.fraction(x["times"]))}
     return SolveResult(Status.SUCCESS, f"storm.standard.{dist.id}", values)
+
+
+_CHANNEL_OUTPUTS = {
+    "depth": "length",
+    "flow": "flow",
+    "area": "area",
+    "velocity": "velocity",
+    "wetted_perimeter": "length",
+    "critical_depth": "length",
+    "top_width": "length",
+    "egl": "length",
+}
+_CHANNEL_INPUTS = {
+    "section": None,
+    "bottom_width": "length",
+    "left_slope": "dimensionless",
+    "right_slope": "dimensionless",
+    "total_depth": "length",
+    "slope": "slope",
+    "n": "dimensionless",
+}
+_CHANNEL_OPTIONAL = frozenset({"bottom_width", "left_slope", "right_slope"})
+
+
+def _section(x: dict) -> channel.Trapezoid:
+    b = x.get("bottom_width", 0.0)
+    z1, z2 = x.get("left_slope", 0.0), x.get("right_slope", 0.0)
+    expected = {"rectangular": z1 == z2 == 0, "triangular": b == 0}
+    if not expected.get(x["section"], True):
+        raise ValueError(f"inputs do not describe a {x['section']} section")
+    return channel.Trapezoid(b, z1, z2)
+
+
+def _channel_values(r) -> SolveResult[Outputs]:
+    if not r.ok:
+        return SolveResult(r.status, r.method, message=r.message)
+    s = r.value
+    return SolveResult(
+        Status.SUCCESS, r.method, {k: getattr(s, k) for k in _CHANNEL_OUTPUTS}
+    )
+
+
+def _express_channel_known_q(x: dict) -> SolveResult[Outputs]:
+    step = x.get("depth_step")
+    return _channel_values(
+        channel.normal_depth(
+            _section(x), x["known_q"], x["slope"], x["n"], x["total_depth"], step
+        )
+    )
+
+
+def _express_channel_known_depth(x: dict) -> SolveResult[Outputs]:
+    return _channel_values(
+        channel.flow_at_depth(
+            _section(x),
+            x["known_depth"],
+            x["slope"],
+            x["n"],
+            x["total_depth"],
+            x.get("depth_step"),
+        )
+    )
+
+
+def _express_channel_rating_row(x: dict) -> SolveResult[Outputs]:
+    r = channel.rating(
+        _section(x),
+        x["total_depth"],
+        int(x["increments"]),
+        x["slope"],
+        x["n"],
+        x.get("depth_step"),
+    )
+    if not r.ok:
+        return SolveResult(r.status, r.method, message=r.message)
+    row = r.value[int(x["row"]) - 1]
+    return SolveResult(
+        Status.SUCCESS, r.method, {k: getattr(row, k) for k in _CHANNEL_OUTPUTS}
+    )
 
 
 def _uh_convolve(x: dict) -> SolveResult[Outputs]:
@@ -261,6 +342,29 @@ METHODS: dict[str, Method] = {
         outputs={"fractions": "dimensionless"},
         run=_storm_standard_mass_curve,
     ),
+    "express.channel.known_q": Method(
+        inputs={**_CHANNEL_INPUTS, "known_q": "flow", "depth_step": "length"},
+        outputs=_CHANNEL_OUTPUTS,
+        run=_express_channel_known_q,
+        optional=_CHANNEL_OPTIONAL | {"depth_step"},
+    ),
+    "express.channel.known_depth": Method(
+        inputs={**_CHANNEL_INPUTS, "known_depth": "length", "depth_step": "length"},
+        outputs=_CHANNEL_OUTPUTS,
+        run=_express_channel_known_depth,
+        optional=_CHANNEL_OPTIONAL | {"depth_step"},
+    ),
+    "express.channel.rating_row": Method(
+        inputs={
+            **_CHANNEL_INPUTS,
+            "increments": "dimensionless",
+            "row": "dimensionless",
+            "depth_step": "length",
+        },
+        outputs=_CHANNEL_OUTPUTS,
+        run=_express_channel_rating_row,
+        optional=_CHANNEL_OPTIONAL | {"depth_step"},
+    ),
     "uh.convolve": Method(
         inputs={"excess": "depth", "unit_hydrograph": "flow"},
         outputs={"flows": "flow"},
@@ -348,7 +452,7 @@ def load_fixture(path: Path) -> Fixture:
         raise FixtureError(f"{where}: unknown method {data.get('method')!r}")
     method = METHODS[data["method"]]
     inputs = data.get("inputs", {})
-    absent = set(method.inputs) - set(inputs)
+    absent = set(method.inputs) - set(inputs) - method.optional
     if absent and data["completeness"] == "complete":
         raise FixtureError(f"{where}: complete case lacks inputs {sorted(absent)}")
     expected = []
@@ -439,7 +543,7 @@ def _computed(values: Outputs, exp: Expected) -> float | None:
 def run_fixture(fixture: Fixture) -> CaseResult:
     method = METHODS[fixture.method]
     gated = fixture.completeness == "complete"
-    if set(method.inputs) - set(fixture.inputs):
+    if set(method.inputs) - set(fixture.inputs) - method.optional:
         values: Outputs = {}
         method_id, message = "", "inputs missing; nothing computed"
     else:
