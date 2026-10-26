@@ -13,3 +13,8 @@ select = [
     "N",    # pep8-naming
     "UP",   # pyupgrade
 ]
+
+[lint.per-file-ignores]
+# HTML report markup and the Qt stylesheet read better unsplit.
+"src/proflow/reports/*.py" = ["E501"]
+"src/proflow/gui/style.py" = ["E501"]

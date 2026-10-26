@@ -1,6 +1,6 @@
 # Phase 3 progress: Express calculators
 
-Status 2026-10-26: channel **solver** done (first part of slice 3.1 "Weirs and open channels"). Form, result table view, plot and report for channels and weirs are not built yet. 279 tests pass, Ruff clean, `proflow fixtures` 39/39 complete cases pass. All methods remain **experimental**.
+Status 2026-10-26: channel solver and one runnable Express channel screen are done. The weir screen, on-screen rating plot, and app shell are not built yet. 303 tests pass in the developer environment, Ruff clean, `proflow fixtures` 39/39 complete cases pass. All methods remain **experimental**.
 
 ## Channel solver (`engine/channel.py`, `proflow channel`)
 
@@ -31,3 +31,13 @@ Fixture tolerance: half the printed digit plus the output's change when the slop
 ## Storm note carried from Phase 2
 
 The IDF-based synthetic storm stays experimental / unbuilt until a complete output case can check its block ordering.
+
+## UI prototype (2026-10-26): one Express channel screen, for the framework decision
+
+Run: `proflow-main/.venv/Scripts/python.exe -m proflow.gui.channel_screen` (PySide6 6.12, optional extra `pip install -e .[gui]`).
+
+- Qt-free layers built first, so they serve PySide6 or a web frontend alike: `model/express.py` (inputs, `calculate_channel` / `calculate_weir`, depth-reporting labels), `graph/express.py` (cross-section and rating plot data), `reports/express.py` (report HTML). Weir solver gained EGL and a Q vs. depth table.
+- PySide6 screen (`gui/`): inputs with units, results with units, warnings and notes, cross-section plot (W.S., Yc, EGL, elevations), Q vs. depth table with row selection, report preview, PDF / HTML export and print, all in one style (`gui/style.py`, light palette fixed so the Windows dark theme does not leak in). Chips show the method id, Exact vs. Express stepped depths, and Experimental.
+- Checked as real windows on this machine: Dell U2720Q at 150 % (native) and 100 % (emulated with QT_SCALE_FACTOR; the 100 % monitor seen in the first run was no longer attached). Report PDF checked by rendering page 1.
+- Qt friction met and fixed: styled spin boxes with `NoButtons` hide their text in Qt 6.12 (arrows hidden by stylesheet instead); combo-box arrows need an SVG asset once styled; Windows dark mode leaks into Fusion unless a palette is set; the `offscreen` platform on Windows has no fonts (PDFs exported there show boxes; the app and native-platform exports are fine).
+- Decision: continue in PySide6 after reviewing the runnable screen at 100 % and 150 % scaling. Next: weir panel, on-screen rating plot, app shell, and PySide6 GUI tests in CI. Remaining shapes follow that complete workflow.
