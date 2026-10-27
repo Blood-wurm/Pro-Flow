@@ -1,4 +1,4 @@
-"""Native Pro-Flow project model, schema "proflow-project" version 3.
+"""Native Pro-Flow project model, schema "proflow-project" version 4.
 
 The project holds user-entered inputs only; calculated values live in a
 separate results document. Dimensional inputs keep the unit they were entered
@@ -9,9 +9,10 @@ storms with a depth per return period whose distribution is either a
 user-supplied dimensionless mass curve or a named, source-backed distribution
 from proflow.engine.storm_library scaled to a duration),
 design events, calculation settings, and Rational, Modified Rational and SCS
-catchments. Older files are read through proflow.io.migrations; saving
-always writes the current version. Structures, hydrographs, nodes, pipes and
-scenarios arrive in later versions.
+catchments. Version 4 adds an optional storm sewer network
+(proflow.model.network). Older files are read through proflow.io.migrations;
+saving always writes the current version. Hydrographs and scenarios arrive in
+later versions.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from proflow.engine.storm_library import STANDARD_DISTRIBUTIONS, StandardDistrib
 from proflow.engine.unit_hydrograph import SHAPE_FACTOR
 from proflow.io.migrations import CURRENT_VERSION, migrate
 from proflow.io.units import Quantity, UnitError, to_internal
+from proflow.model.network import Network, NetworkReader
 
 SCHEMA = "proflow-project"
 SCHEMA_VERSION = CURRENT_VERSION
@@ -154,6 +156,7 @@ class Project:
     catchments: tuple[Catchment, ...]
     settings: Settings = field(default_factory=Settings)
     storms: tuple[StormDef, ...] = ()
+    network: Network | None = None
 
     def idf_set(self, id_: str) -> IdfSetDef:
         return next(s for s in self.idf_sets if s.id == id_)
@@ -175,7 +178,7 @@ class Project:
                 "storms": [_storm_dict(s) for s in self.storms],
             },
             "catchments": [_catchment_dict(c) for c in self.catchments],
-        }
+        } | ({} if self.network is None else {"network": self.network.to_dict()})
 
     @classmethod
     def from_dict(cls, data: object) -> Project:
@@ -307,7 +310,7 @@ class _Reader:
             data,
             "project",
             {"schema", "schema_version", "name", "events", "rainfall", "catchments"},
-            {"settings"},
+            {"settings", "network"},
         )
         if root is None:
             raise ProjectError(self.problems)
@@ -332,9 +335,13 @@ class _Reader:
         idf_sets = self.idf_sets(rainfall.get("idf_sets", []))
         storms = self.storms(rainfall.get("storms", []))
         catchments = self.catchments(root.get("catchments"), idf_sets, storms, events)
+        network = None
+        if root.get("network") is not None:
+            methods = {c.id: c.method for c in catchments}
+            network = NetworkReader(self.problems).network(root["network"], methods)
         if self.problems:
             raise ProjectError(self.problems)
-        return Project(name, idf_sets, events, catchments, settings, storms)
+        return Project(name, idf_sets, events, catchments, settings, storms, network)
 
     def settings(self, data: object) -> Settings:
         d = self.obj(data, "settings", set(), {"time_step"})

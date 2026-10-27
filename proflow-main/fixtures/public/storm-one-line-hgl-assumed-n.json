@@ -1,0 +1,73 @@
+{
+  "schema": "proflow-fixture/1",
+  "id": "storm-one-line-hgl-assumed-n",
+  "product": "Hydraflow Storm Sewers",
+  "product_version": "2008 v12.02",
+  "completeness": "partial",
+  "method": "storm.line_hgl",
+  "source": {
+    "title": "Storm Sewer Tabulation, project file 07698SWS.stm, run 09-05-2008",
+    "url": "https://online.wichita.gov/LFWebDocs/Home/GetStormwaterDoc/220496",
+    "local_pdf": "reference/public_cases/Storm-one-line-source.pdf",
+    "pdf_page": 46,
+    "sha256": "c43dacab5e050aa693c3409d9d9a5988ce440f9bfb2c9a6bb11fa91801a53d9e",
+    "excerpt": "reference/public_cases/Storm-one-line-case.pdf"
+  },
+  "inputs": {
+    "flow": {
+      "value": 7.07,
+      "unit": "cfs"
+    },
+    "length": {
+      "value": 148,
+      "unit": "ft"
+    },
+    "diameter": {
+      "value": 18,
+      "unit": "in"
+    },
+    "invert_up": {
+      "value": 1389.23,
+      "unit": "ft"
+    },
+    "invert_down": {
+      "value": 1388.75,
+      "unit": "ft"
+    },
+    "n": {
+      "value": 0.013,
+      "unit": "-"
+    },
+    "tailwater": "critical"
+  },
+  "expected": {
+    "full_capacity": {
+      "value": "5.99",
+      "unit": "cfs"
+    },
+    "hgl_down": {
+      "value": "1389.77",
+      "unit": "ft"
+    },
+    "hgl_up": {
+      "value": "1390.85",
+      "unit": "ft"
+    },
+    "velocity_average": {
+      "value": "4.76",
+      "unit": "ft/s"
+    }
+  },
+  "missing": [
+    "Manning's n (0.013 assumed here)",
+    "starting HGL setting (critical depth inferred here)",
+    "junction loss and other design-code settings"
+  ],
+  "assumptions": [
+    "n = 0.013, a common RCP value; the report does not print n.",
+    "Starting HGL at critical depth: the printed HGL Dn 1389.77 is the downstream invert plus about 1.02 ft, the critical depth of 7.07 cfs in an 18-in pipe.",
+    "The printed velocity 4.76 ft/s is read as the average of the downstream and upstream velocities (the manual's FL DOT report defines its velocity that way); the tabulation column is not defined in the excerpt.",
+    "Flow is the printed 7.07 cfs (see storm-one-line-rational-flow-sedgwick-idf)."
+  ],
+  "notes": "Informational qualitative comparison of the one-line standard step under stated assumptions. Do not tune n or the method to these printed values."
+}

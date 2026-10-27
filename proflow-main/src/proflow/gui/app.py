@@ -23,8 +23,11 @@ from PySide6.QtWidgets import (
 from proflow import __version__
 from proflow.gui import style
 from proflow.gui.channel_panel import ChannelPanel
-from proflow.gui.panel import CalculatorPanel
+from proflow.gui.sewer_panel import SewerPanel
 from proflow.gui.weir_panel import WeirPanel
+
+# Sidebar groups: (heading, page names), in order.
+GROUPS = (("EXPRESS", ("Channel", "Weir")), ("STORM SEWERS", ("Sewer network",)))
 
 
 class MainWindow(QMainWindow):
@@ -38,9 +41,10 @@ class MainWindow(QMainWindow):
         layout.setSpacing(0)
 
         self.pages = QStackedWidget()
-        self.panels: dict[str, CalculatorPanel] = {
+        self.panels: dict[str, QWidget] = {
             "Channel": ChannelPanel(),
             "Weir": WeirPanel(),
+            "Sewer network": SewerPanel(),
         }
         layout.addWidget(self._sidebar())
         for panel in self.panels.values():
@@ -62,16 +66,19 @@ class MainWindow(QMainWindow):
         layout.setSpacing(4)
         layout.addWidget(QLabel("Pro-Flow", objectName="appName"))
         layout.addSpacing(14)
-        layout.addWidget(QLabel("EXPRESS", objectName="navGroup"))
         self.nav = QButtonGroup(self)
         self.nav_buttons: dict[str, QPushButton] = {}
-        for name in self.panels:
-            button = QPushButton(name, objectName="nav")
-            button.setCheckable(True)
-            button.clicked.connect(lambda _=False, n=name: self.show_panel(n))
-            self.nav.addButton(button)
-            self.nav_buttons[name] = button
-            layout.addWidget(button)
+        for i, (heading, names) in enumerate(GROUPS):
+            if i:
+                layout.addSpacing(12)
+            layout.addWidget(QLabel(heading, objectName="navGroup"))
+            for name in names:
+                button = QPushButton(name, objectName="nav")
+                button.setCheckable(True)
+                button.clicked.connect(lambda _=False, n=name: self.show_panel(n))
+                self.nav.addButton(button)
+                self.nav_buttons[name] = button
+                layout.addWidget(button)
         layout.addStretch(1)
         footer = QLabel(f"v{__version__} · experimental", objectName="muted")
         layout.addWidget(footer)
@@ -80,10 +87,11 @@ class MainWindow(QMainWindow):
     def show_panel(self, name: str) -> None:
         self.pages.setCurrentWidget(self.panels[name])
         self.nav_buttons[name].setChecked(True)
-        self.setWindowTitle(f"Pro-Flow · Express · {name}")
+        group = next(g for g, names in GROUPS if name in names)
+        self.setWindowTitle(f"Pro-Flow · {group.title()} · {name}")
 
     @property
-    def current(self) -> CalculatorPanel:
+    def current(self) -> QWidget:
         return self.pages.currentWidget()
 
 

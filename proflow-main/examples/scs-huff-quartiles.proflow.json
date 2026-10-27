@@ -1,6 +1,6 @@
 {
   "schema": "proflow-project",
-  "schema_version": 3,
+  "schema_version": 4,
   "name": "Illustrative SCS catchment, Huff quartiles 1 to 4 (legacy ISWS curves)",
   "settings": {
     "time_step": {

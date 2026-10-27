@@ -1,6 +1,6 @@
 {
   "schema": "proflow-project",
-  "schema_version": 3,
+  "schema_version": 4,
   "name": "Illustrative SCS catchment, curvilinear vs triangular unit hydrograph",
   "settings": {"time_step": {"value": 2, "unit": "min"}},
   "events": [2, 100],

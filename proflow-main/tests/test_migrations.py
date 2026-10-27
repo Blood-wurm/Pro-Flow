@@ -12,6 +12,7 @@ from proflow.model.project import SCHEMA_VERSION, Project, ProjectError
 HERE = Path(__file__).resolve().parent
 V1_FIRST_PASS = HERE / "data" / "v1-first-pass-rational.proflow.json"
 V2_SCS = HERE / "data" / "v2-scs-user-storm.proflow.json"
+V3_SCS = HERE / "data" / "v3-scs-user-storm.proflow.json"
 EXAMPLES = HERE.parent / "examples"
 
 
@@ -19,14 +20,14 @@ def _json(path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def test_current_version_is_3():
-    assert SCHEMA_VERSION == CURRENT_VERSION == 3
+def test_current_version_is_4():
+    assert SCHEMA_VERSION == CURRENT_VERSION == 4
 
 
 def test_first_pass_v1_file_migrates_with_explicit_defaults():
     v1 = _json(V1_FIRST_PASS)
     out, passed = migrate(v1)
-    assert passed == [1, 2]
+    assert passed == [1, 2, 3]
     assert out["schema_version"] == CURRENT_VERSION
     assert out["rainfall"]["storms"] == []
     assert out["catchments"][0]["ascending_limb_factor"] == 1.0
@@ -50,11 +51,20 @@ def test_current_document_passes_through_unchanged():
 def test_v2_file_migrates_by_version_only():
     v2 = _json(V2_SCS)
     out, passed = migrate(v2)
-    assert passed == [2]
-    assert out == {**v2, "schema_version": 3}
+    assert passed == [2, 3]
+    assert out == {**v2, "schema_version": 4}
     assert Project.from_dict(v2) == load_project(
         EXAMPLES / "scs-user-storm.proflow.json"
     )
+
+
+def test_v3_file_migrates_by_version_only():
+    v3 = _json(V3_SCS)
+    out, passed = migrate(v3)
+    assert passed == [3]
+    assert out == {**v3, "schema_version": 4}
+    assert "network" not in out
+    assert Project.from_dict(v3).network is None
 
 
 def test_first_pass_v1_file_loads_same_as_current_example():
@@ -91,7 +101,7 @@ def test_v1_open_save_writes_current(tmp_path):
     assert read_project(out) == (project, CURRENT_VERSION)
 
 
-@pytest.mark.parametrize("version", [0, 4, "2", None])
+@pytest.mark.parametrize("version", [0, 5, "2", None])
 def test_unknown_versions_rejected(version):
     data = _json(V1_FIRST_PASS)
     data["schema_version"] = version
@@ -111,7 +121,7 @@ def test_migrated_file_still_validated():
 def test_cli_notes_migration(capsys):
     assert main(["run", str(V1_FIRST_PASS)]) == EXIT_OK
     out = capsys.readouterr().out
-    assert "schema v1; read through migration, saving writes v3" in out
+    assert "schema v1; read through migration, saving writes v4" in out
     assert "Qp=11.77 cfs" in out
 
 

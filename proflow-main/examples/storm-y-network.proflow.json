@@ -1,0 +1,289 @@
+{
+  "schema": "proflow-project",
+  "schema_version": 4,
+  "name": "Storm Sewers Y network (example inputs)",
+  "settings": {
+    "time_step": {
+      "value": 1,
+      "unit": "min"
+    }
+  },
+  "events": [
+    100
+  ],
+  "rainfall": {
+    "idf_sets": [
+      {
+        "id": "sedgwick",
+        "name": "Sedgwick Co., KS 100-yr FHA coefficients, as in the public Storm Sewers report (fixtures/idf)",
+        "form": "fha",
+        "curves": [
+          {
+            "return_period": 100,
+            "b": 62.2794,
+            "d": 10.1,
+            "e": 0.6624
+          }
+        ]
+      }
+    ]
+  },
+  "catchments": [
+    {
+      "id": "A",
+      "name": "Example area to inlet A",
+      "method": "rational",
+      "idf": "sedgwick",
+      "area": {
+        "value": 1.5,
+        "unit": "ac"
+      },
+      "c": 0.5,
+      "tc": {
+        "value": 10,
+        "unit": "min"
+      },
+      "ascending_limb_factor": 1,
+      "receding_limb_factor": 1
+    },
+    {
+      "id": "B",
+      "name": "Example area to inlet B",
+      "method": "rational",
+      "idf": "sedgwick",
+      "area": {
+        "value": 1.0,
+        "unit": "ac"
+      },
+      "c": 0.7,
+      "tc": {
+        "value": 15,
+        "unit": "min"
+      },
+      "ascending_limb_factor": 1,
+      "receding_limb_factor": 1
+    }
+  ],
+  "network": {
+    "name": "Y network (example inputs)",
+    "plan_unit": "ft",
+    "crs": null,
+    "source": {
+      "origin": "example",
+      "note": "example input chosen to exercise a Y junction; not a design value or a published case"
+    },
+    "structures": [
+      {
+        "id": "OUT",
+        "name": "Outfall",
+        "kind": "outfall",
+        "x": 0.0,
+        "y": 0.0,
+        "rim": {
+          "value": 104.0,
+          "unit": "ft"
+        },
+        "catchment": null,
+        "known_flow": null,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "x": "example",
+            "y": "example",
+            "rim": "example",
+            "tailwater": "example"
+          }
+        },
+        "tailwater": {
+          "mode": "elevation",
+          "elevation": {
+            "value": 101.8,
+            "unit": "ft"
+          }
+        }
+      },
+      {
+        "id": "J1",
+        "name": "Junction MH",
+        "kind": "manhole",
+        "x": 180.0,
+        "y": 0.0,
+        "rim": {
+          "value": 106.0,
+          "unit": "ft"
+        },
+        "catchment": null,
+        "known_flow": null,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "x": "example",
+            "y": "example",
+            "rim": "example"
+          }
+        }
+      },
+      {
+        "id": "A1",
+        "name": "Inlet A",
+        "kind": "inlet",
+        "x": 430.0,
+        "y": 0.0,
+        "rim": {
+          "value": 108.5,
+          "unit": "ft"
+        },
+        "catchment": "A",
+        "known_flow": null,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "x": "example",
+            "y": "example",
+            "rim": "example",
+            "catchment": "example"
+          }
+        }
+      },
+      {
+        "id": "B1",
+        "name": "Inlet B",
+        "kind": "inlet",
+        "x": 180.0,
+        "y": 120.0,
+        "rim": {
+          "value": 106.5,
+          "unit": "ft"
+        },
+        "catchment": "B",
+        "known_flow": null,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "x": "example",
+            "y": "example",
+            "rim": "example",
+            "catchment": "example"
+          }
+        }
+      }
+    ],
+    "pipes": [
+      {
+        "id": "P1",
+        "name": "J1 to OUT",
+        "upstream": "J1",
+        "downstream": "OUT",
+        "length": {
+          "value": 180.0,
+          "unit": "ft"
+        },
+        "diameter": {
+          "value": 24,
+          "unit": "in"
+        },
+        "invert_up": {
+          "value": 100.54,
+          "unit": "ft"
+        },
+        "invert_down": {
+          "value": 100.0,
+          "unit": "ft"
+        },
+        "n": 0.013,
+        "material": "RCP",
+        "junction_k": 1.0,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "length": "example",
+            "diameter": "example",
+            "invert_up": "example",
+            "invert_down": "example",
+            "n": "example",
+            "junction_k": "example"
+          }
+        }
+      },
+      {
+        "id": "PA",
+        "name": "A1 to J1",
+        "upstream": "A1",
+        "downstream": "J1",
+        "length": {
+          "value": 250.0,
+          "unit": "ft"
+        },
+        "diameter": {
+          "value": 18,
+          "unit": "in"
+        },
+        "invert_up": {
+          "value": 102.09,
+          "unit": "ft"
+        },
+        "invert_down": {
+          "value": 100.84,
+          "unit": "ft"
+        },
+        "n": 0.013,
+        "material": "RCP",
+        "junction_k": 1.0,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "length": "example",
+            "diameter": "example",
+            "invert_up": "example",
+            "invert_down": "example",
+            "n": "example",
+            "junction_k": "example"
+          }
+        }
+      },
+      {
+        "id": "PB",
+        "name": "B1 to J1",
+        "upstream": "B1",
+        "downstream": "J1",
+        "length": {
+          "value": 120.0,
+          "unit": "ft"
+        },
+        "diameter": {
+          "value": 18,
+          "unit": "in"
+        },
+        "invert_up": {
+          "value": 101.44,
+          "unit": "ft"
+        },
+        "invert_down": {
+          "value": 100.84,
+          "unit": "ft"
+        },
+        "n": 0.013,
+        "material": "RCP",
+        "junction_k": 1.0,
+        "source": {
+          "origin": "example",
+          "note": "example input chosen to exercise a Y junction; not a design value or a published case",
+          "provenance": {
+            "length": "example",
+            "diameter": "example",
+            "invert_up": "example",
+            "invert_down": "example",
+            "n": "example",
+            "junction_k": "example"
+          }
+        }
+      }
+    ]
+  }
+}

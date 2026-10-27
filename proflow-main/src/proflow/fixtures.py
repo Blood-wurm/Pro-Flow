@@ -40,6 +40,7 @@ from proflow.engine.rainfall import MassCurve
 from proflow.engine.rational import peak_flow, standard_rational
 from proflow.engine.result import SolveResult, Status
 from proflow.engine.scs import excess_increments, runoff_depth
+from proflow.engine.sewer import Line, line_hydraulics
 from proflow.engine.storm_library import STANDARD_DISTRIBUTIONS
 from proflow.engine.weir import rectangular_depth
 from proflow.io.units import UnitError, from_internal, to_internal
@@ -108,6 +109,28 @@ def _storm_rational_line_flow(x: dict) -> SolveResult[Outputs]:
     return SolveResult(
         Status.SUCCESS, "rational.peak/1", {"intensity": intensity, "flow": flow}
     )
+
+
+def _storm_line_hgl(x: dict) -> SolveResult[Outputs]:
+    line = Line(x["diameter"], x["length"], x["invert_up"], x["invert_down"], x["n"])
+    r = line_hydraulics(
+        line,
+        x["flow"],
+        x["tailwater"],
+        x.get("tailwater_elevation"),
+        x.get("junction_k", 1.0),
+    )
+    if not r.ok:
+        return SolveResult(r.status, r.method, message=r.message)
+    h = r.value
+    values = {
+        "full_capacity": h.capacity,
+        "hgl_down": h.down.hgl,
+        "hgl_up": h.up.hgl,
+        "velocity_average": (h.down.velocity + h.up.velocity) / 2,
+        "critical_depth": h.critical_depth,
+    }
+    return SolveResult(Status.SUCCESS, r.method, values, warnings=r.warnings)
 
 
 def _scs_excess_mass_curve(x: dict) -> SolveResult[Outputs]:
@@ -306,6 +329,28 @@ METHODS: dict[str, Method] = {
         },
         outputs={"intensity": "intensity", "flow": "flow"},
         run=_storm_rational_line_flow,
+    ),
+    "storm.line_hgl": Method(
+        inputs={
+            "flow": "flow",
+            "length": "length",
+            "diameter": "length",
+            "invert_up": "length",
+            "invert_down": "length",
+            "n": "dimensionless",
+            "tailwater": None,
+            "tailwater_elevation": "length",
+            "junction_k": "dimensionless",
+        },
+        outputs={
+            "full_capacity": "flow",
+            "hgl_down": "length",
+            "hgl_up": "length",
+            "velocity_average": "velocity",
+            "critical_depth": "length",
+        },
+        run=_storm_line_hgl,
+        optional=frozenset({"tailwater_elevation", "junction_k"}),
     ),
     "nrcs.scs.excess.mass_curve": Method(
         inputs={

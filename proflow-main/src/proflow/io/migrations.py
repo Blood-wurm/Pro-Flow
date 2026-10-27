@@ -13,13 +13,17 @@ defaults explicitly and keeps any of those fields a v1 file already holds
 v2 -> v3 (named standard storm distributions): a v2 reader rejects a storm
 distribution given as {"standard", "duration"}. Every v2 file is already a
 valid v3 file, so the step only sets the version.
+
+v3 -> v4 (storm sewer network): a v3 reader rejects the top-level "network"
+key. The network is optional and every v3 file is a valid v4 file, so the
+step only sets the version.
 """
 
 from __future__ import annotations
 
 import copy
 
-CURRENT_VERSION = 3
+CURRENT_VERSION = 4
 
 SCS_DEFAULTS = {"tp_equation": "16A-10", "ia_ratio": 0.2}
 RATIONAL_DEFAULTS = {"ascending_limb_factor": 1.0, "receding_limb_factor": 1.0}
@@ -49,7 +53,12 @@ def _v2_to_v3(data: dict) -> dict:
     return data
 
 
-STEPS = {1: _v1_to_v2, 2: _v2_to_v3}
+def _v3_to_v4(data: dict) -> dict:
+    data["schema_version"] = 4
+    return data
+
+
+STEPS = {1: _v1_to_v2, 2: _v2_to_v3, 3: _v3_to_v4}
 
 
 def migrate(data: dict) -> tuple[dict, list[int]]:

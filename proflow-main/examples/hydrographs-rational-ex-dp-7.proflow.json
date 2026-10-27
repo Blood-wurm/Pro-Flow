@@ -1,6 +1,6 @@
 {
   "schema": "proflow-project",
-  "schema_version": 3,
+  "schema_version": 4,
   "name": "EX-DP-7 Rational (public Hydrographs v2024 case)",
   "settings": {"time_step": {"value": 1, "unit": "min"}},
   "events": [5],
